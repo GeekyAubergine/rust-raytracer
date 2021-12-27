@@ -30,7 +30,7 @@ fn ray_trace(
     height: u32,
     _pixel_sender: Sender<Pixel>,
     pixel_batch_sender: Sender<PixelBatchUpdate>,
-    pixels_data_sender: Sender<PixelsData>,
+    _pixels_data_sender: Sender<PixelsData>,
 ) {
     let camera = Camera::new(
         width,
@@ -45,15 +45,13 @@ fn ray_trace(
     let scene = Arc::new(make_random_balls_scene());
     for samples_per_pixel_side in SAMPLES_PER_PIXEL_SIDE_VALUES {
         let pixel_batch_sender = pixel_batch_sender.clone();
-        let pixels_data = render_scene_save_to_file(
+        render_scene_save_to_file(
             &scene,
             &camera,
             samples_per_pixel_side,
             String::from("output/raytracer.png"),
             pixel_batch_sender,
         );
-
-        pixels_data_sender.send(pixels_data).unwrap();
     }
 }
 

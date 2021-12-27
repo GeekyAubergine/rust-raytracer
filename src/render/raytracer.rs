@@ -179,11 +179,11 @@ pub fn render_scene(
                 }
             }
 
-            // pixel_batch_sender
-            //     .send(PixelBatchUpdate {
-            //         pixels: pixel_updates.clone(),
-            //     })
-            //     .unwrap();
+            pixel_batch_sender
+                .send(PixelBatchUpdate {
+                    pixels: pixel_updates.clone(),
+                })
+                .unwrap();
 
             completed_chunks.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
 
