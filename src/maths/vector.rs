@@ -1,6 +1,10 @@
 use nalgebra::Vector3;
 use rand::Rng;
 
+pub fn make_vector3f32_zero() -> Vector3<f32> {
+    return Vector3::<f32>::new(0.0, 0.0, 0.0);
+}
+
 pub fn is_vector3f32_near_zero(vec: &Vector3<f32>) -> bool {
     const EPS: f32 = 1.0e-8;
     return vec.x.abs() < EPS && vec.y.abs() < EPS && vec.z.abs() < EPS;
