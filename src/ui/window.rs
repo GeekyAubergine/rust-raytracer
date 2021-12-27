@@ -1,7 +1,7 @@
 use log::error;
 use std::time::Duration;
 
-use pixels::{Pixels, SurfaceTexture, Error};
+use pixels::{Error, Pixels, SurfaceTexture};
 use winit::{
     dpi::LogicalSize,
     event::{Event, VirtualKeyCode},
@@ -86,7 +86,7 @@ impl Window {
                             for x in 0..row_pixels {
                                 let pixel_index =
                                     (y as usize * self.texture_width as usize + x as usize) * 4;
-                                let color = pixels_data[y as usize][x as usize].color;
+                                let color = pixels_data[y as usize][x as usize].color();
                                 frame_pixels.get_frame()[pixel_index] = (color.r() * 256.0) as u8;
                                 frame_pixels.get_frame()[pixel_index + 1] =
                                     (color.g() * 256.0) as u8;
@@ -110,9 +110,10 @@ impl Window {
                     match pixel_result {
                         Ok(pixels_batch_update) => {
                             for pixel_data in pixels_batch_update.pixels.iter() {
-                                let pixel_index =
-                                    (pixel_data.y * self.texture_width as usize + pixel_data.x) * 4;
-                                let color = pixel_data.color;
+                                let pixel_index = ((pixel_data.position().y * self.texture_width
+                                    + pixel_data.position().x)
+                                    * 4) as usize;
+                                let color = pixel_data.color();
                                 frame_pixels.get_frame()[pixel_index] = (color.r() * 256.0) as u8;
                                 frame_pixels.get_frame()[pixel_index + 1] =
                                     (color.g() * 256.0) as u8;
@@ -139,9 +140,10 @@ impl Window {
                     let pixel_result = self.pixel_receiver.recv_timeout(Duration::from_micros(1));
                     match pixel_result {
                         Ok(pixel_data) => {
-                            let pixel_index =
-                                (pixel_data.y * self.texture_width as usize + pixel_data.x) * 4;
-                            let color = pixel_data.color;
+                            let pixel_index = ((pixel_data.position().y * self.texture_width
+                                + pixel_data.position().x)
+                                * 4) as usize;
+                            let color = pixel_data.color();
                             frame_pixels.get_frame()[pixel_index] = (color.r() * 256.0) as u8;
                             frame_pixels.get_frame()[pixel_index + 1] = (color.g() * 256.0) as u8;
                             frame_pixels.get_frame()[pixel_index + 2] = (color.b() * 256.0) as u8;

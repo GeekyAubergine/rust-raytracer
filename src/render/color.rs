@@ -1,5 +1,6 @@
 use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Range, Sub, SubAssign};
 
+use image::Rgba;
 use rand::Rng;
 
 #[derive(Clone, Copy, Debug)]
@@ -16,6 +17,14 @@ impl Color {
     }
     pub fn zero() -> Color {
         return Color::new(0.0, 0.0, 0.0, 0.0);
+    }
+    pub fn rgba(self) -> Rgba<u8> {
+        return image::Rgba([
+            (255.0 * self.r) as u8,
+            (255.0 * self.g) as u8,
+            (255.0 * self.b) as u8,
+            255 as u8,
+        ]);
     }
     pub fn r(&self) -> &f32 {
         return &self.r;
