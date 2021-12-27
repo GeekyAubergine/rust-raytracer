@@ -10,16 +10,14 @@ use winit::{
 };
 use winit_input_helper::WinitInputHelper;
 
-use super::pixel::{Pixel, PixelBatchUpdate, PixelsData};
+use super::pixel::PixelBatchUpdate;
 
 pub struct Window {
     window_width: f64,
     window_height: f64,
     texture_width: u32,
     texture_height: u32,
-    pixel_receiver: crossbeam_channel::Receiver<Pixel>,
     pixel_update_batch_receiver: crossbeam_channel::Receiver<PixelBatchUpdate>,
-    pixels_data_receiver: crossbeam_channel::Receiver<PixelsData>,
 }
 
 impl Window {
@@ -28,18 +26,14 @@ impl Window {
         window_height: f64,
         texture_width: u32,
         texture_height: u32,
-        pixel_receiver: crossbeam_channel::Receiver<Pixel>,
         pixel_update_batch_receiver: crossbeam_channel::Receiver<PixelBatchUpdate>,
-        pixels_data_receiver: crossbeam_channel::Receiver<PixelsData>,
     ) -> Window {
         return Window {
             window_width,
             window_height,
             texture_width,
             texture_height,
-            pixel_receiver,
             pixel_update_batch_receiver,
-            pixels_data_receiver,
         };
     }
     pub fn init(self) -> Result<(), Error> {
@@ -74,34 +68,6 @@ impl Window {
             }
 
             {
-                let pixels_data_update = self
-                    .pixels_data_receiver
-                    .recv_timeout(Duration::from_micros(1));
-                match pixels_data_update {
-                    Ok(pixels_data) => {
-                        let rows = pixels_data.len();
-                        for y in 0..rows {
-                            let row = &pixels_data[y];
-                            let row_pixels = row.len();
-                            for x in 0..row_pixels {
-                                let pixel_index =
-                                    (y as usize * self.texture_width as usize + x as usize) * 4;
-                                let color = pixels_data[y as usize][x as usize].color();
-                                frame_pixels.get_frame()[pixel_index] = (color.r() * 256.0) as u8;
-                                frame_pixels.get_frame()[pixel_index + 1] =
-                                    (color.g() * 256.0) as u8;
-                                frame_pixels.get_frame()[pixel_index + 2] =
-                                    (color.b() * 256.0) as u8;
-                                frame_pixels.get_frame()[pixel_index + 3] =
-                                    (color.a() * 256.0) as u8;
-                            }
-                        }
-                    }
-                    Err(_) => {}
-                }
-            }
-
-            {
                 let mut pixels_updated = false;
                 loop {
                     let pixel_result = self
@@ -123,32 +89,6 @@ impl Window {
                                     (color.a() * 256.0) as u8;
                                 pixels_updated = true;
                             }
-                        }
-                        Err(_) => {
-                            if pixels_updated {
-                                window.request_redraw();
-                            }
-                            break;
-                        }
-                    }
-                }
-            }
-
-            {
-                let mut pixels_updated = false;
-                loop {
-                    let pixel_result = self.pixel_receiver.recv_timeout(Duration::from_micros(1));
-                    match pixel_result {
-                        Ok(pixel_data) => {
-                            let pixel_index = ((pixel_data.position().y * self.texture_width
-                                + pixel_data.position().x)
-                                * 4) as usize;
-                            let color = pixel_data.color();
-                            frame_pixels.get_frame()[pixel_index] = (color.r() * 256.0) as u8;
-                            frame_pixels.get_frame()[pixel_index + 1] = (color.g() * 256.0) as u8;
-                            frame_pixels.get_frame()[pixel_index + 2] = (color.b() * 256.0) as u8;
-                            frame_pixels.get_frame()[pixel_index + 3] = (color.a() * 256.0) as u8;
-                            pixels_updated = true;
                         }
                         Err(_) => {
                             if pixels_updated {

@@ -1,13 +1,12 @@
 use std::{
-    sync::{atomic::AtomicUsize, Arc},
-    thread,
-    time::{Duration, Instant},
+    sync::Arc,
 };
 
 use crossbeam_channel::Sender;
 use rayon::iter::{IntoParallelIterator, ParallelIterator};
 
 use crate::{
+    stats::stats::Stats,
     file::file::save_png_from_pixel_data,
     geom::bvh::bvh_node::BVHNode,
     ray::{ray::Ray, ray_collider::RayCollider},
@@ -84,6 +83,7 @@ pub fn render_scene(
     camera: &Camera,
     samples_per_pixel_side: u32,
     pixel_batch_sender: Sender<PixelBatchUpdate>,
+    stats: Stats,
 ) -> PixelsData {
     let height = camera.screen_height();
     let width = camera.screen_width();
@@ -110,50 +110,10 @@ pub fn render_scene(
     }
 
     let samples_per_pixel = samples_per_pixel_side * samples_per_pixel_side;
-    let total_chunks = pixel_chunks.len();
-    let completed_chunks = Arc::new(AtomicUsize::new(0));
-    let completed_chunks_clone = completed_chunks.clone();
-    let start = Instant::now();
-
-    println!("Frame SPP: {:?}:", samples_per_pixel);
-
-    let progress_thread = thread::spawn(move || loop {
-        let completed_chunks_value =
-            completed_chunks_clone.fetch_add(0, std::sync::atomic::Ordering::Relaxed);
-
-        if completed_chunks_value > 0 {
-            let progress = completed_chunks_value as f32 / total_chunks as f32;
-
-            let remaining_chunks = total_chunks - completed_chunks_value;
-
-            let duration = start.elapsed();
-
-            let per_chunk = duration / completed_chunks_value as u32;
-
-            let remaining = per_chunk * remaining_chunks as u32;
-
-            print!(
-                    "\rChunks: {}/{} {:2.2}% Chunk: {}.{:.3}ms Runtime: {}.{}s Remaining: {}.{}s                 ",
-                    completed_chunks_value,
-                    total_chunks,
-                    progress * 100.0,
-                    per_chunk.as_millis(),
-                    per_chunk.subsec_micros(),
-                    duration.as_secs(),
-                    duration.subsec_millis(),
-                    remaining.as_secs(),
-                    remaining.subsec_millis()
-                );
-
-            if remaining_chunks == 0 {
-                break;
-            }
-        }
-
-        thread::sleep(Duration::from_millis(50));
-    });
 
     let bvh_tree = BVHNode::new(scene.shapes.clone(), 0.0, 1.0);
+
+    stats.clone().start_current_frame(pixel_chunks.len() as u32, samples_per_pixel);
 
     let pixel_updates: Vec<Pixel> = pixel_chunks
         .into_par_iter()
@@ -185,7 +145,7 @@ pub fn render_scene(
                 })
                 .unwrap();
 
-            completed_chunks.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+            stats.clone().complete_chunk();
 
             return pixel_updates;
         })
@@ -202,18 +162,7 @@ pub fn render_scene(
             },
         );
 
-    let duration = start.elapsed();
-
-    progress_thread.join().unwrap();
-
-    let rays = width * height * samples_per_pixel;
-
-    let rays_per_second = rays as f64 / duration.as_secs_f64();
-
-    println!(
-        "\nCalculation time: {:?} Rays cast: {} Rays/sec {:.4}",
-        duration, rays, rays_per_second
-    );
+    stats.complete_frame();
 
     for pixel in pixel_updates {
         pixels[pixel.position().y as usize][pixel.position().x as usize] = pixel;
@@ -228,8 +177,15 @@ pub fn render_scene_save_to_file(
     samples_per_pixel_side: u32,
     file_path: String,
     pixel_batch_sender: Sender<PixelBatchUpdate>,
+    stats: Stats,
 ) -> PixelsData {
-    let pixel_data = render_scene(scene, camera, samples_per_pixel_side, pixel_batch_sender);
+    let pixel_data = render_scene(
+        scene,
+        camera,
+        samples_per_pixel_side,
+        pixel_batch_sender,
+        stats,
+    );
     save_png_from_pixel_data(file_path, &pixel_data);
     return pixel_data;
 }
