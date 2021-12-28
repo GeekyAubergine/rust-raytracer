@@ -9,7 +9,7 @@ use std::{
 
 use crossbeam_channel::Sender;
 
-use crate::ui::pixel::PixelBatchUpdate;
+use crate::ui::{pixel::PixelBatchUpdate, text::render_string_at_position};
 
 #[derive(Clone, Copy)]
 struct ChunksData {
@@ -63,13 +63,41 @@ fn init(stats: Stats) {
             Ok(stats) => {
                 let frame = stats.current_frame;
                 let chunks = frame.chunks_data;
-                let current_frame_duration = frame.start_time.elapsed();
+
+                let current_frame_duration: Duration = match frame.end_time {
+                    None => frame.start_time.elapsed(),
+                    Some(end_time) => end_time.duration_since(frame.start_time),
+                };
 
                 let completed_chunks = chunks.completed_chunks;
                 let progress = completed_chunks as f32 / chunks.total_chunks.max(1) as f32;
                 let remaining_chunks = chunks.total_chunks - completed_chunks;
                 let per_chunk = current_frame_duration / completed_chunks.max(1);
                 let remaining_chunks_time = per_chunk * remaining_chunks as u32;
+                let total_time = current_frame_duration + remaining_chunks_time;
+
+                let run_time_string = format!(
+                    "{:03}.{:03}s / {:03}.{:03}s - {:03}.{:03}s",
+                    current_frame_duration.as_secs(),
+                    current_frame_duration.subsec_millis(),
+                    remaining_chunks_time.as_secs(),
+                    remaining_chunks_time.subsec_millis(),
+                    total_time.as_secs(),
+                    total_time.subsec_millis(),
+                );
+                let chunks_string = format!(
+                    "Chunks {:08} / {:08} {:2.2}% {}.{:03}ms ",
+                    completed_chunks,
+                    chunks.total_chunks,
+                    progress * 100.0,
+                    per_chunk.as_millis(),
+                    per_chunk.subsec_micros(),
+                );
+                let update_string = format!("{}\n{}", run_time_string, chunks_string);
+
+                let pixels_update = render_string_at_position(10, 10, update_string);
+
+                stats.pixel_batch_sender.send(pixels_update).unwrap();
 
                 if progress == last_progress {
                     continue;
