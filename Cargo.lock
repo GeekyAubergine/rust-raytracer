@@ -36,6 +36,15 @@ dependencies = [
 
 [[package]]
 name = "arrayvec"
+version = "0.4.12"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "cd9fd44efafa8690358b7408d253adf110036b88f55672a933f01d616ad9b1b9"
+dependencies = [
+ "nodrop",
+]
+
+[[package]]
+name = "arrayvec"
 version = "0.7.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "8da52d66c7071e2e3fa2a1e5c6d088fec47b593032b254f5e980de8ea54454d6"
@@ -608,6 +617,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "itoa"
+version = "0.4.8"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b71991ff56294aa922b450139ee08b3bfc70982c6b2c7562771375cf73542dd4"
+
+[[package]]
 name = "jni-sys"
 version = "0.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -889,6 +904,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "nodrop"
+version = "0.1.14"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "72ef4a56884ca558e5ddb05a1d1e7e1bfd9a68d9ed024c21704cc98872dae1bb"
+
+[[package]]
 name = "nom"
 version = "7.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -915,6 +936,16 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "26873667bbbb7c5182d4a37c1add32cdf09f841af72da53318fdb81543c15085"
 dependencies = [
  "num-traits",
+]
+
+[[package]]
+name = "num-format"
+version = "0.4.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "bafe4179722c2894288ee77a9f044f02811c86af699344c498b0840c698a2465"
+dependencies = [
+ "arrayvec 0.4.12",
+ "itoa",
 ]
 
 [[package]]
@@ -1261,6 +1292,7 @@ dependencies = [
  "image",
  "log",
  "nalgebra",
+ "num-format",
  "pixels",
  "rand",
  "rayon",
@@ -1633,7 +1665,7 @@ version = "0.11.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "eae7181fe6ba5f4b632a9079cc9e922a64555156c87def72c063f94b180c7d68"
 dependencies = [
- "arrayvec",
+ "arrayvec 0.7.2",
  "js-sys",
  "log",
  "parking_lot",
@@ -1653,7 +1685,7 @@ version = "0.11.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "35600627b6c718ad0e23ed75fb6140bfe32cdf21c8f539ce3c9ab8180e2cb38e"
 dependencies = [
- "arrayvec",
+ "arrayvec 0.7.2",
  "bitflags",
  "cfg_aliases",
  "copyless",
@@ -1675,7 +1707,7 @@ version = "0.11.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "af28b29ef0b44cd22dd9895d4349b9d5a687df42f58da234871198637eabe328"
 dependencies = [
- "arrayvec",
+ "arrayvec 0.7.2",
  "ash",
  "bit-set",
  "bitflags",

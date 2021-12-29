@@ -8,6 +8,7 @@ use std::{
 };
 
 use crossbeam_channel::Sender;
+use num_format::{Locale, ToFormattedString};
 
 use crate::ui::{pixel::PixelBatchUpdate, text::render_string_at_position};
 
@@ -18,11 +19,17 @@ struct ChunksData {
 }
 
 #[derive(Clone, Copy)]
+struct RaysData {
+    total_rays: u64,
+}
+
+#[derive(Clone, Copy)]
 struct FrameData {
     start_time: Instant,
     end_time: Option<Instant>,
     samples_per_pixel: u32,
-    chunks_data: ChunksData,
+    chunks: ChunksData,
+    rays: RaysData,
 }
 
 #[derive(Clone, Copy)]
@@ -48,15 +55,15 @@ fn create_new_frame(total_chunks: u32, samples_per_pixel: u32) -> FrameData {
         start_time: Instant::now(),
         end_time: None,
         samples_per_pixel,
-        chunks_data: ChunksData {
+        chunks: ChunksData {
             total_chunks: total_chunks,
             completed_chunks: 0,
         },
+        rays: RaysData { total_rays: 0 },
     };
 }
 
 fn init(stats: Stats) {
-    let mut last_progress = 0.0;
     thread::spawn(move || loop {
         let data_clone = Arc::clone(&stats.data);
 
@@ -72,7 +79,8 @@ fn init(stats: Stats) {
         match data {
             Some(data) => {
                 let frame = data.current_frame;
-                let chunks = frame.chunks_data;
+                let chunks = frame.chunks;
+                let rays = frame.rays;
 
                 let current_frame_duration: Duration = match frame.end_time {
                     None => frame.start_time.elapsed(),
@@ -84,6 +92,7 @@ fn init(stats: Stats) {
                 let remaining_chunks = chunks.total_chunks - completed_chunks;
                 let per_chunk = current_frame_duration / completed_chunks.max(1);
                 let remaining_chunks_time = per_chunk * remaining_chunks as u32;
+                let rays_per_second = rays.total_rays / current_frame_duration.as_secs().max(1);
 
                 let run_time_string = format!(
                     "Time:     \t{:03}.{:03}s\nRemaining:\t{:03}.{:03}s\nProgress: \t{:03.02}%",
@@ -95,25 +104,24 @@ fn init(stats: Stats) {
                 );
                 let settings_string = format!("Setting\n\tSpp: {}", frame.samples_per_pixel);
                 let chunks_string = format!(
-                    "Chunks:\t{:06}\n\tTime  : {}.{:03}ms ",
-                    chunks.total_chunks,
+                    "Chunks:\t{}\n\tTime  : {}.{:03}ms",
+                    chunks.total_chunks.to_formatted_string(&Locale::en_GB),
                     per_chunk.as_millis(),
                     per_chunk.subsec_micros(),
                 );
+                let rays_string = format!(
+                    "Rays:\t{}\t{}/s",
+                    rays.total_rays.to_formatted_string(&Locale::en_GB),
+                    rays_per_second.to_formatted_string(&Locale::en_GB),
+                );
                 let update_string = format!(
-                    "{}\n{}\n{}",
-                    run_time_string, settings_string, chunks_string
+                    "{}\n{}\n{}\n{}",
+                    run_time_string, settings_string, chunks_string, rays_string
                 );
 
                 let pixels_update = render_string_at_position(10, 10, update_string);
 
                 data.pixel_batch_sender.send(pixels_update).unwrap();
-
-                if progress == last_progress {
-                    continue;
-                }
-
-                last_progress = progress;
 
                 print!(
                         "\rChunks: {}/{} {:2.2}% Chunk: {}.{:.3}ms Runtime: {}.{}s Remaining: {}.{}s                 ",
@@ -128,7 +136,7 @@ fn init(stats: Stats) {
                         remaining_chunks_time.subsec_millis()
                     );
             }
-            _ => {}
+            None => {}
         }
 
         thread::sleep(Duration::from_millis(100));
@@ -153,8 +161,11 @@ impl Stats {
     }
     pub fn complete_chunk(self) {
         let mut data = self.data.lock().unwrap();
-
-        data.current_frame.chunks_data.completed_chunks += 1;
+        data.current_frame.chunks.completed_chunks += 1;
+    }
+    pub fn create_ray(&self) {
+        let mut data = self.data.lock().unwrap();
+        data.current_frame.rays.total_rays += 1;
     }
     pub fn start_current_frame(self, total_chunks: u32, samples_per_pixel: u32) {
         let mut data = self.data.lock().unwrap();

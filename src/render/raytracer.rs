@@ -1,17 +1,15 @@
-use std::{
-    sync::Arc,
-};
+use std::sync::Arc;
 
 use crossbeam_channel::Sender;
 use rayon::iter::{IntoParallelIterator, ParallelIterator};
 
 use crate::{
-    stats::stats::Stats,
     file::file::save_png_from_pixel_data,
     geom::bvh::bvh_node::BVHNode,
     ray::{ray::Ray, ray_collider::RayCollider},
     render::color::Color,
     scene::scene::Scene,
+    stats::stats::Stats,
     ui::pixel::{Pixel, PixelBatchUpdate, PixelsData},
 };
 
@@ -26,7 +24,12 @@ struct PixelChunk {
     chunk_size: u32,
 }
 
-fn ray_color(bvh_tree: &BVHNode, scene: &Arc<Scene>, ray: &Ray, depth: u32) -> Color {
+fn ray_color(
+    bvh_tree: &BVHNode,
+    scene: &Arc<Scene>,
+    ray: &Ray,
+    depth: u32,
+) -> Color {
     if depth == 0 {
         return Color::zero();
     }
@@ -113,7 +116,9 @@ pub fn render_scene(
 
     let bvh_tree = BVHNode::new(scene.shapes.clone(), 0.0, 1.0);
 
-    stats.clone().start_current_frame(pixel_chunks.len() as u32, samples_per_pixel);
+    stats
+        .clone()
+        .start_current_frame(pixel_chunks.len() as u32, samples_per_pixel);
 
     let pixel_updates: Vec<Pixel> = pixel_chunks
         .into_par_iter()
