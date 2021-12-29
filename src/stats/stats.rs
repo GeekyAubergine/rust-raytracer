@@ -59,9 +59,19 @@ fn init(stats: Stats) {
     let mut last_progress = 0.0;
     thread::spawn(move || loop {
         let data_clone = Arc::clone(&stats.data);
+
+        let mut data: Option<StatsData> = None;
+
         match data_clone.try_lock() {
             Ok(stats) => {
-                let frame = stats.current_frame;
+                data = Some(stats.clone());
+            }
+            Err(_) => {}
+        }
+
+        match data {
+            Some(data) => {
+                let frame = data.current_frame;
                 let chunks = frame.chunks_data;
 
                 let current_frame_duration: Duration = match frame.end_time {
@@ -74,31 +84,30 @@ fn init(stats: Stats) {
                 let remaining_chunks = chunks.total_chunks - completed_chunks;
                 let per_chunk = current_frame_duration / completed_chunks.max(1);
                 let remaining_chunks_time = per_chunk * remaining_chunks as u32;
-                let total_time = current_frame_duration + remaining_chunks_time;
 
                 let run_time_string = format!(
-                    "T: {:03}.{:03}s / {:03}.{:03}s - {:03}.{:03}s",
+                    "Time:     \t{:03}.{:03}s\nRemaining:\t{:03}.{:03}s\nProgress: \t{:03.02}%",
                     current_frame_duration.as_secs(),
                     current_frame_duration.subsec_millis(),
-                    total_time.as_secs(),
-                    total_time.subsec_millis(),
                     remaining_chunks_time.as_secs(),
                     remaining_chunks_time.subsec_millis(),
-                );
-                let frame_string = format!("F: {} spp", frame.samples_per_pixel);
-                let chunks_string = format!(
-                    "C: {:06} / {:06} - {:2.2}% {}.{:03}ms ",
-                    completed_chunks,
-                    chunks.total_chunks,
                     progress * 100.0,
+                );
+                let settings_string = format!("Setting\n\tSpp: {}", frame.samples_per_pixel);
+                let chunks_string = format!(
+                    "Chunks:\t{:06}\n\tTime  : {}.{:03}ms ",
+                    chunks.total_chunks,
                     per_chunk.as_millis(),
                     per_chunk.subsec_micros(),
                 );
-                let update_string = format!("{}\n{}\n{}", run_time_string, frame_string, chunks_string);
+                let update_string = format!(
+                    "{}\n{}\n{}",
+                    run_time_string, settings_string, chunks_string
+                );
 
                 let pixels_update = render_string_at_position(10, 10, update_string);
 
-                stats.pixel_batch_sender.send(pixels_update).unwrap();
+                data.pixel_batch_sender.send(pixels_update).unwrap();
 
                 if progress == last_progress {
                     continue;
@@ -107,22 +116,22 @@ fn init(stats: Stats) {
                 last_progress = progress;
 
                 print!(
-                    "\rChunks: {}/{} {:2.2}% Chunk: {}.{:.3}ms Runtime: {}.{}s Remaining: {}.{}s                 ",
-                    completed_chunks,
-                    chunks.total_chunks,
-                    progress * 100.0,
-                    per_chunk.as_millis(),
-                    per_chunk.subsec_micros(),
-                    current_frame_duration.as_secs(),
-                    current_frame_duration.subsec_millis(),
-                    remaining_chunks_time.as_secs(),
-                    remaining_chunks_time.subsec_millis()
-                );
+                        "\rChunks: {}/{} {:2.2}% Chunk: {}.{:.3}ms Runtime: {}.{}s Remaining: {}.{}s                 ",
+                        completed_chunks,
+                        chunks.total_chunks,
+                        progress * 100.0,
+                        per_chunk.as_millis(),
+                        per_chunk.subsec_micros(),
+                        current_frame_duration.as_secs(),
+                        current_frame_duration.subsec_millis(),
+                        remaining_chunks_time.as_secs(),
+                        remaining_chunks_time.subsec_millis()
+                    );
             }
-            Err(_) => {}
+            _ => {}
         }
 
-        thread::sleep(Duration::from_millis(50));
+        thread::sleep(Duration::from_millis(100));
     });
 }
 

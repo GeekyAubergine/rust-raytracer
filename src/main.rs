@@ -1,3 +1,4 @@
+use font8x8::{UnicodeFonts, BASIC_FONTS, GREEK_FONTS};
 use stats::stats::Stats;
 use std::{sync::Arc, thread};
 
@@ -7,19 +8,19 @@ use render::{camera::Camera, raytracer::render_scene_save_to_file};
 use scene::generator::make_random_balls_scene;
 use ui::{pixel::PixelBatchUpdate, window::Window};
 
-mod stats;
 mod file;
 mod geom;
 mod maths;
 mod ray;
 mod render;
 mod scene;
+mod stats;
 mod ui;
 
-const IMAGE_WIDTH: u32 = 1600;
-const IMAGE_HEIGHT: u32 = 900;
-const WINDOW_WIDTH: u32 = IMAGE_WIDTH;
-const WINDOW_HEIGHT: u32 = IMAGE_HEIGHT;
+const IMAGE_WIDTH: u32 = 1080;
+const IMAGE_HEIGHT: u32 = 920;
+const WINDOW_WIDTH: u32 = 1080;
+const WINDOW_HEIGHT: u32 = 920;
 const THREAD_POOL_SIZE: u32 = 12;
 
 const SAMPLES_PER_PIXEL_SIDE_VALUES: [u32; 4] = [1, 2, 4, 8];

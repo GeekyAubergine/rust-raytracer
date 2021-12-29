@@ -16,4 +16,4 @@ rand = "0.8.4"
 rayon = "1.5.1"
 crossbeam-channel = "0.5.1"
 nalgebra = "0.29.0"
-phf = { version = "0.10.1", features = ["macros"] }
+font8x8 = "0.3.1"
