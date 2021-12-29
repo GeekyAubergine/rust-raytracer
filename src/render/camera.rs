@@ -1,4 +1,4 @@
-use nalgebra::Vector3;
+use glam::Vec3A;
 
 use crate::{
     maths::{maths::random_f32_between, vector::random_point_in_unit_disk},
@@ -9,9 +9,9 @@ use crate::{
 struct CameraSettings {
     screen_width: u32,
     screen_height: u32,
-    camera_position: Vector3<f32>,
-    look_at_position: Vector3<f32>,
-    up_vector: Vector3<f32>,
+    camera_position: Vec3A,
+    look_at_position: Vec3A,
+    up_vector: Vec3A,
     field_of_view: f32,
     aspect_ratio: f32,
     aperture: f32,
@@ -20,11 +20,11 @@ struct CameraSettings {
 
 #[derive(Clone)]
 struct CameraMetadata {
-    horizontal: Vector3<f32>,
-    vertical: Vector3<f32>,
-    camera_u: Vector3<f32>,
-    camera_v: Vector3<f32>,
-    lower_left_corner: Vector3<f32>,
+    horizontal: Vec3A,
+    vertical: Vec3A,
+    camera_u: Vec3A,
+    camera_v: Vec3A,
+    lower_left_corner: Vec3A,
     lens_radius: f32,
 }
 
@@ -34,7 +34,7 @@ pub struct Camera {
 }
 
 fn recalculate_camera(settings: CameraSettings) -> Camera {
-    let focus_distance = (settings.camera_position - settings.look_at_position).magnitude();
+    let focus_distance = (settings.camera_position - settings.look_at_position).length();
 
     // Horizontal field-of-view in degrees
     let theta = std::f32::consts::PI / 180.0 * settings.field_of_view;
@@ -42,8 +42,8 @@ fn recalculate_camera(settings: CameraSettings) -> Camera {
     let viewport_width = settings.aspect_ratio * viewport_height;
 
     let cw = (settings.camera_position - settings.look_at_position).normalize();
-    let camera_u = settings.up_vector.cross(&cw).normalize();
-    let camera_v = cw.cross(&camera_u);
+    let camera_u = settings.up_vector.cross(cw).normalize();
+    let camera_v = cw.cross(camera_u);
 
     let horizontal = focus_distance * viewport_width * camera_u;
     let vertical = focus_distance * viewport_height * camera_v;
@@ -69,9 +69,9 @@ impl Camera {
     pub fn new(
         width: u32,
         height: u32,
-        camera_position: Vector3<f32>,
-        look_at_position: Vector3<f32>,
-        up_vector: Vector3<f32>,
+        camera_position: Vec3A,
+        look_at_position: Vec3A,
+        up_vector: Vec3A,
         field_of_view: f32,
         aperture: f32,
         shutter: f32,
@@ -94,10 +94,10 @@ impl Camera {
     pub fn screen_height(&self) -> u32 {
         return self.settings.screen_height;
     }
-    pub fn position(&self) -> Vector3<f32> {
+    pub fn position(&self) -> Vec3A {
         return self.settings.camera_position;
     }
-    pub fn look_at(&self) -> Vector3<f32> {
+    pub fn look_at(&self) -> Vec3A {
         return self.settings.look_at_position;
     }
     pub fn aspect_ratio(&self) -> f32 {
@@ -106,12 +106,12 @@ impl Camera {
     pub fn field_of_view(&self) -> f32 {
         return self.settings.field_of_view;
     }
-    pub fn set_camera_position(&mut self, camera_position: Vector3<f32>) {
+    pub fn set_camera_position(&mut self, camera_position: Vec3A) {
         let mut settings = self.settings;
         settings.camera_position = camera_position;
         *self = recalculate_camera(settings);
     }
-    pub fn set_look_at(&mut self, look_at: Vector3<f32>) {
+    pub fn set_look_at(&mut self, look_at: Vec3A) {
         let mut settings = self.settings;
         settings.look_at_position = look_at;
         *self = recalculate_camera(settings);

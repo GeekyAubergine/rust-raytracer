@@ -1,13 +1,13 @@
-use nalgebra::Vector3;
+use glam::Vec3A;
 
 pub struct Ray {
-    pub origin: Vector3<f32>,
-    pub direction: Vector3<f32>,
+    pub origin: Vec3A,
+    pub direction: Vec3A,
     pub time: f32,
 }
 
 impl Ray {
-    pub fn new(origin: Vector3<f32>, direction: Vector3<f32>, time: f32) -> Ray {
+    pub fn new(origin: Vec3A, direction: Vec3A, time: f32) -> Ray {
         return Ray {
             origin,
             direction,
@@ -15,7 +15,7 @@ impl Ray {
         };
     }
 
-    pub fn at(&self, t: f32) -> Vector3<f32> {
+    pub fn at(&self, t: f32) -> Vec3A {
         return self.origin + self.direction * t;
     }
 }

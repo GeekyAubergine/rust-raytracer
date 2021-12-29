@@ -29,36 +29,36 @@ fn render_char_at_position(x_pos: usize, y_pos: usize, char: char) -> Vec<Pixel>
                 for x in 0..8 {
                     let pixel = row >> x & 1;
                     let x = x * 2;
-                    let y= y * 2;
+                    let y = y * 2;
                     match pixel {
                         1 => {
                             pixels.push(Pixel::new(
                                 (x + x_pos) as u32,
                                 (y + y_pos) as u32,
-                                Color::new(1.0, 1.0, 1.0, 1.0),
+                                Color::one(),
                             ));
                             pixels.push(Pixel::new(
                                 (x + 1 + x_pos) as u32,
                                 (y + y_pos) as u32,
-                                Color::new(1.0, 1.0, 1.0, 1.0),
+                                Color::one(),
                             ));
                             pixels.push(Pixel::new(
                                 (x + x_pos) as u32,
-                                (y + 1 +  y_pos) as u32,
-                                Color::new(1.0, 1.0, 1.0, 1.0),
+                                (y + 1 + y_pos) as u32,
+                                Color::one(),
                             ));
                             pixels.push(Pixel::new(
-                                (x + 1 +  x_pos) as u32,
-                                (y + 1 +  y_pos) as u32,
-                                Color::new(1.0, 1.0, 1.0, 1.0),
+                                (x + 1 + x_pos) as u32,
+                                (y + 1 + y_pos) as u32,
+                                Color::one(),
                             ));
                         }
                         _ => {}
                     }
                 }
             }
-        },
-        None => {},
+        }
+        None => {}
     }
 
     return pixels;
@@ -70,11 +70,13 @@ fn render_string_line_at_position(x_pos: usize, y_pos: usize, string: &str) -> V
     let char_count = string.chars().count();
 
     for y in 0..(GLYPH_HEIGHT + GLYPH_PADDING_VERTICAL + GLYPH_PADDING_VERTICAL) {
-        for x in 0..((GLYPH_WIDTH + GLYPH_PADDING_HORIZONTAL + GLYPH_PADDING_HORIZONTAL) * char_count) {
+        for x in
+            0..((GLYPH_WIDTH + GLYPH_PADDING_HORIZONTAL + GLYPH_PADDING_HORIZONTAL) * char_count)
+        {
             background_pixels.push(Pixel::new(
                 (x + x_pos) as u32,
                 (y + y_pos) as u32,
-                Color::new(0.0, 0.0, 0.0, 1.0),
+                Color::zero(),
             ));
         }
     }
@@ -83,8 +85,13 @@ fn render_string_line_at_position(x_pos: usize, y_pos: usize, string: &str) -> V
         .chars()
         .enumerate()
         .map(|(index, char)| {
-            let x = x_pos + (GLYPH_WIDTH + GLYPH_PADDING_HORIZONTAL + GLYPH_PADDING_HORIZONTAL) * index;
-            return render_char_at_position(x + GLYPH_PADDING_HORIZONTAL, y_pos + GLYPH_PADDING_VERTICAL, char);
+            let x =
+                x_pos + (GLYPH_WIDTH + GLYPH_PADDING_HORIZONTAL + GLYPH_PADDING_HORIZONTAL) * index;
+            return render_char_at_position(
+                x + GLYPH_PADDING_HORIZONTAL,
+                y_pos + GLYPH_PADDING_VERTICAL,
+                char,
+            );
         })
         .reduce(|acc: Vec<Pixel>, arr: Vec<Pixel>| {
             let mut out = acc.clone();

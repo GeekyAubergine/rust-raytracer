@@ -80,13 +80,12 @@ impl Window {
                                     + pixel_data.position().x)
                                     * 4) as usize;
                                 let color = pixel_data.color();
-                                frame_pixels.get_frame()[pixel_index] = (color.r() * 256.0) as u8;
+                                frame_pixels.get_frame()[pixel_index] = (color.r() * 255.0) as u8;
                                 frame_pixels.get_frame()[pixel_index + 1] =
-                                    (color.g() * 256.0) as u8;
+                                    (color.g() * 255.0) as u8;
                                 frame_pixels.get_frame()[pixel_index + 2] =
-                                    (color.b() * 256.0) as u8;
-                                frame_pixels.get_frame()[pixel_index + 3] =
-                                    (color.a() * 256.0) as u8;
+                                    (color.b() * 255.0) as u8;
+                                frame_pixels.get_frame()[pixel_index + 3] = 255;
                                 pixels_updated = true;
                             }
                         }

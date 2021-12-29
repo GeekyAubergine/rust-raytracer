@@ -36,7 +36,7 @@ pub fn make_empty_pixel_data(width: u32, height: u32) -> PixelsData {
     for y in 0..height {
         out.push(Vec::new());
         for x in 0..width {
-            out[y as usize].push(Pixel::new(x, y, Color::new(0.0, 0.0, 0.0, 0.0)));
+            out[y as usize].push(Pixel::new(x, y, Color::zero()));
         }
     }
 

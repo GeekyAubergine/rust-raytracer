@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use nalgebra::Vector3;
+use glam::Vec3A;
 
 use crate::{
     geom::bvh::aabb::{build_surrounding_bounding_box, AABB},
@@ -14,9 +14,9 @@ use crate::{
 use super::shape::Shape;
 
 pub struct Sphere {
-    pub centre: Vector3<f32>,
+    pub centre: Vec3A,
     pub radius: f32,
-    pub velocity: Vector3<f32>,
+    pub velocity: Vec3A,
     pub material: Arc<dyn Material>,
 }
 
@@ -27,16 +27,16 @@ impl Sphere {
         z: f32,
         r: f32,
         material: Arc<dyn Material + Send + Sync>,
-        velocity: Vector3<f32>,
+        velocity: Vec3A,
     ) -> Sphere {
         return Sphere {
-            centre: Vector3::<f32>::new(x, y, z),
+            centre: Vec3A::new(x, y, z),
             radius: r,
             material,
             velocity,
         };
     }
-    pub fn center_at_frame_time(&self, time_delta: f32) -> Vector3<f32> {
+    pub fn center_at_frame_time(&self, time_delta: f32) -> Vec3A {
         return self.centre + self.velocity * time_delta;
     }
 }
@@ -62,7 +62,7 @@ impl Shape for Sphere {
     }
 
     fn get_bounding_box(&self, frame_start_time: f32, frame_end_time: f32) -> AABB {
-        let radius_vec = Vector3::<f32>::new(self.radius, self.radius, self.radius);
+        let radius_vec = Vec3A::new(self.radius, self.radius, self.radius);
         let centre_start = self.center_at_frame_time(frame_start_time);
         let centre_end = self.center_at_frame_time(frame_end_time);
 
