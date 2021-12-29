@@ -77,23 +77,24 @@ fn init(stats: Stats) {
                 let total_time = current_frame_duration + remaining_chunks_time;
 
                 let run_time_string = format!(
-                    "{:03}.{:03}s / {:03}.{:03}s - {:03}.{:03}s",
+                    "T: {:03}.{:03}s / {:03}.{:03}s - {:03}.{:03}s",
                     current_frame_duration.as_secs(),
                     current_frame_duration.subsec_millis(),
-                    remaining_chunks_time.as_secs(),
-                    remaining_chunks_time.subsec_millis(),
                     total_time.as_secs(),
                     total_time.subsec_millis(),
+                    remaining_chunks_time.as_secs(),
+                    remaining_chunks_time.subsec_millis(),
                 );
+                let frame_string = format!("F: {} spp", frame.samples_per_pixel);
                 let chunks_string = format!(
-                    "Chunks {:08} / {:08} {:2.2}% {}.{:03}ms ",
+                    "C: {:06} / {:06} - {:2.2}% {}.{:03}ms ",
                     completed_chunks,
                     chunks.total_chunks,
                     progress * 100.0,
                     per_chunk.as_millis(),
                     per_chunk.subsec_micros(),
                 );
-                let update_string = format!("{}\n{}", run_time_string, chunks_string);
+                let update_string = format!("{}\n{}\n{}", run_time_string, frame_string, chunks_string);
 
                 let pixels_update = render_string_at_position(10, 10, update_string);
 
