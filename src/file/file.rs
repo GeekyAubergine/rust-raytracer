@@ -3,7 +3,6 @@ use image::Rgba;
 use crate::ui::pixel::PixelsData;
 
 pub fn save_png_from_pixel_data(path: String, pixels: &PixelsData) {
-    println!("Saving file");
     let height = pixels.len();
 
     if height < 1 {
@@ -28,5 +27,4 @@ pub fn save_png_from_pixel_data(path: String, pixels: &PixelsData) {
     std::fs::create_dir_all(prefix).unwrap();
 
     image_buffer.save(path).unwrap();
-    println!("Done");
 }

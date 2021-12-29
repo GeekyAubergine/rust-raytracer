@@ -1,13 +1,12 @@
+use font8x8::{UnicodeFonts, BASIC_FONTS, GREEK_FONTS};
+use stats::stats::Stats;
 use std::{sync::Arc, thread};
 
 use crossbeam_channel::Sender;
 use nalgebra::Vector3;
 use render::{camera::Camera, raytracer::render_scene_save_to_file};
 use scene::generator::make_random_balls_scene;
-use ui::{
-    pixel::{Pixel, PixelBatchUpdate, PixelsData},
-    window::Window,
-};
+use ui::{pixel::PixelBatchUpdate, window::Window};
 
 mod file;
 mod geom;
@@ -15,23 +14,18 @@ mod maths;
 mod ray;
 mod render;
 mod scene;
+mod stats;
 mod ui;
 
-const IMAGE_WIDTH: u32 = 1600;
-const IMAGE_HEIGHT: u32 = 900;
-const WINDOW_WIDTH: u32 = IMAGE_WIDTH;
-const WINDOW_HEIGHT: u32 = IMAGE_HEIGHT;
+const IMAGE_WIDTH: u32 = 1080;
+const IMAGE_HEIGHT: u32 = 920;
+const WINDOW_WIDTH: u32 = 1080;
+const WINDOW_HEIGHT: u32 = 920;
 const THREAD_POOL_SIZE: u32 = 12;
 
 const SAMPLES_PER_PIXEL_SIDE_VALUES: [u32; 4] = [1, 2, 4, 8];
 
-fn ray_trace(
-    width: u32,
-    height: u32,
-    _pixel_sender: Sender<Pixel>,
-    pixel_batch_sender: Sender<PixelBatchUpdate>,
-    _pixels_data_sender: Sender<PixelsData>,
-) {
+fn ray_trace(width: u32, height: u32, pixel_batch_sender: Sender<PixelBatchUpdate>) {
     let camera = Camera::new(
         width,
         height,
@@ -43,14 +37,17 @@ fn ray_trace(
         0.0,
     );
     let scene = Arc::new(make_random_balls_scene());
+    let stats = Stats::new(pixel_batch_sender.clone(), 1);
+    stats.clone().init();
+
     for samples_per_pixel_side in SAMPLES_PER_PIXEL_SIDE_VALUES {
-        let pixel_batch_sender = pixel_batch_sender.clone();
         render_scene_save_to_file(
             &scene,
             &camera,
             samples_per_pixel_side,
             String::from("output/raytracer.png"),
-            pixel_batch_sender,
+            pixel_batch_sender.clone(),
+            stats.clone(),
         );
     }
 }
@@ -61,19 +58,11 @@ fn main() {
         .build_global()
         .unwrap();
 
-    let (pixel_sender, pixel_receiver) = crossbeam_channel::unbounded::<Pixel>();
     let (pixel_batch_update_sender, pixel_batch_update_receiver) =
         crossbeam_channel::unbounded::<PixelBatchUpdate>();
-    let (pixels_data_sender, pixels_data_receiver) = crossbeam_channel::unbounded::<PixelsData>();
 
     thread::spawn(|| {
-        ray_trace(
-            IMAGE_WIDTH,
-            IMAGE_HEIGHT,
-            pixel_sender,
-            pixel_batch_update_sender,
-            pixels_data_sender,
-        );
+        ray_trace(IMAGE_WIDTH, IMAGE_HEIGHT, pixel_batch_update_sender);
     });
 
     // thread::spawn(|| {
@@ -94,9 +83,7 @@ fn main() {
         WINDOW_HEIGHT as f64,
         IMAGE_WIDTH,
         IMAGE_HEIGHT,
-        pixel_receiver,
         pixel_batch_update_receiver,
-        pixels_data_receiver,
     );
 
     let ui_result = window.init();
