@@ -1,15 +1,15 @@
-use nalgebra::Vector3;
+use glam::Vec3A;
 use rand::Rng;
 
 use crate::{maths::vector::random_point_in_unit_sphere, ray::ray::Ray};
 
 
-pub(crate) fn reflect_Vector3f32(v1: Vector3<f32>, v2: Vector3<f32>) -> Vector3<f32> {
-    return v1 - 2.0 * v1.dot(&v2) * v2;
+pub(crate) fn reflect_Vec3Af32(v1: Vec3A, v2: Vec3A) -> Vec3A {
+    return v1 - 2.0 * v1.dot(v2) * v2;
 }
 
-pub(crate) fn reflect_ray(ray: &Ray, point: Vector3<f32>, normal: Vector3<f32>, smoothness: f32) -> Ray {
-    let direction = reflect_Vector3f32(ray.direction, normal); //ray.direction - 2.0 * ray.direction.dot(&normal) * normal;
+pub(crate) fn reflect_ray(ray: &Ray, point: Vec3A, normal: Vec3A, smoothness: f32) -> Ray {
+    let direction = reflect_Vec3Af32(ray.direction, normal); //ray.direction - 2.0 * ray.direction.dot(&normal) * normal;
     let roughness_offset = (1.0 - smoothness) * random_point_in_unit_sphere();
     return Ray::new(point + roughness_offset, direction, ray.time);
 }
@@ -22,8 +22,8 @@ pub(crate) fn reflectance(cos_theta: f32, refraction_ratio: f32) -> f32 {
 
 pub(crate) fn refract_ray(
     ray: &Ray,
-    point: Vector3<f32>,
-    normal: Vector3<f32>,
+    point: Vec3A,
+    normal: Vec3A,
     on_front_face: bool,
     refraction_index: f32,
 ) -> Ray {
@@ -35,7 +35,7 @@ pub(crate) fn refract_ray(
 
     let unit_direction = ray.direction.normalize();
 
-    let cos_theta = ((-1.0) * unit_direction).dot(&normal).min(1.0);
+    let cos_theta = ((-1.0) * unit_direction).dot(normal).min(1.0);
     let sin_theta = (1.0 - cos_theta.powi(2)).sqrt();
 
     let mut rng = rand::thread_rng();
@@ -43,12 +43,12 @@ pub(crate) fn refract_ray(
     let will_reflect = rng.gen::<f32>() < reflectance(cos_theta, refraction_ratio);
 
     if cannot_refract || will_reflect {
-        let direction = reflect_Vector3f32(unit_direction, normal);
+        let direction = reflect_Vec3Af32(unit_direction, normal);
         return Ray::new(point, direction, 0.0);
     } else {
-        let cos_theta = (-1.0 * unit_direction).dot(&normal).min(1.0);
+        let cos_theta = (-1.0 * unit_direction).dot(normal).min(1.0);
         let r_out_perpendicular = refraction_ratio * (unit_direction + cos_theta * normal);
-        let r_out_parallel = -(1.0 - r_out_perpendicular.magnitude_squared()).abs().sqrt() * normal;
+        let r_out_parallel = -(1.0 - r_out_perpendicular.length_squared()).abs().sqrt() * normal;
         let direction = r_out_perpendicular + r_out_parallel;
 
         return Ray::new(point, direction, ray.time);

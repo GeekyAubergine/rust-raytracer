@@ -24,7 +24,7 @@ impl Dielectric {
 impl Material for Dielectric {
     fn scatter(&self, ray: &Ray, hit_record: &RayCollision) -> Option<MaterialCollisionResult> {
         return Some(MaterialCollisionResult {
-            color: Color::new(self.transparency, self.transparency, self.transparency, 1.0),
+            color: Color::new(self.transparency, self.transparency, self.transparency),
             ray: refract_ray(
                 ray,
                 hit_record.point,

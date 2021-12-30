@@ -1,11 +1,10 @@
 use std::sync::Arc;
 
-use nalgebra::Vector3;
+use glam::Vec3A;
 use rand::Rng;
 
 use crate::{
     geom::shapes::sphere::Sphere,
-    maths::vector::make_vector3f32_zero,
     ray::materials::{dielectric::Dielectric, lambertian::Lambertian, metal::Metal},
     render::color::Color,
 };
@@ -16,14 +15,14 @@ pub fn make_random_balls_scene() -> Scene {
     let mut scene = Scene::new();
     let mut rng = rand::thread_rng();
 
-    let ground_mat = Arc::new(Lambertian::new(Color::new(0.5, 0.5, 0.5, 1.0)));
+    let ground_mat = Arc::new(Lambertian::new(Color::new(0.5, 0.5, 0.5)));
     let ground_sphere = Sphere::new(
         0.0,
         -1000.0,
         0.0,
         1000.0,
         ground_mat,
-        make_vector3f32_zero(),
+        Vec3A::ZERO,
     );
 
     scene.add_shape(Arc::new(ground_sphere));
@@ -34,7 +33,7 @@ pub fn make_random_balls_scene() -> Scene {
         for b in -x..=x {
             let mat: f32 = rng.gen::<f32>();
 
-            let center = Vector3::<f32>::new(
+            let center = Vec3A::new(
                 (a as f32) + rng.gen_range(0.0..0.9),
                 0.2,
                 (b as f32) + rng.gen_range(0.0..0.9),
@@ -50,7 +49,7 @@ pub fn make_random_balls_scene() -> Scene {
                     center.z,
                     0.2,
                     sphere_mat,
-                    Vector3::<f32>::new(0.0, 0.1, 0.0),
+                    Vec3A::new(0.0, 0.1, 0.0),
                 );
 
                 scene.add_shape(Arc::new(sphere));
@@ -65,7 +64,7 @@ pub fn make_random_balls_scene() -> Scene {
                     center.z,
                     0.2,
                     sphere_mat,
-                    make_vector3f32_zero(),
+                    Vec3A::ZERO,
                 );
 
                 scene.add_shape(Arc::new(sphere));
@@ -78,7 +77,7 @@ pub fn make_random_balls_scene() -> Scene {
                     center.z,
                     0.2,
                     sphere_mat,
-                    make_vector3f32_zero(),
+                    Vec3A::ZERO,
                 );
 
                 scene.add_shape(Arc::new(sphere));
@@ -87,12 +86,12 @@ pub fn make_random_balls_scene() -> Scene {
     }
 
     let mat1 = Arc::new(Dielectric::new(1.5, 0.8));
-    let mat2 = Arc::new(Lambertian::new(Color::new(0.4, 0.2, 0.1, 1.0)));
-    let mat3 = Arc::new(Metal::new(Color::new(0.7, 0.6, 0.5, 1.0), 0.0));
+    let mat2 = Arc::new(Lambertian::new(Color::new(0.4, 0.2, 0.1)));
+    let mat3 = Arc::new(Metal::new(Color::new(0.7, 0.6, 0.5), 0.0));
 
-    let sphere1 = Sphere::new(0.0, 1.0, 0.0, 1.0, mat1, make_vector3f32_zero());
-    let sphere2 = Sphere::new(-4.0, 1.0, 0.0, 1.0, mat2, make_vector3f32_zero());
-    let sphere3 = Sphere::new(4.0, 1.0, 0.0, 1.0, mat3, make_vector3f32_zero());
+    let sphere1 = Sphere::new(0.0, 1.0, 0.0, 1.0, mat1, Vec3A::ZERO);
+    let sphere2 = Sphere::new(-4.0, 1.0, 0.0, 1.0, mat2, Vec3A::ZERO);
+    let sphere3 = Sphere::new(4.0, 1.0, 0.0, 1.0, mat3, Vec3A::ZERO);
 
     scene.add_shape(Arc::new(sphere1));
     scene.add_shape(Arc::new(sphere2));

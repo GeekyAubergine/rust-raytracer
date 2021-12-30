@@ -1,9 +1,8 @@
-use font8x8::{UnicodeFonts, BASIC_FONTS, GREEK_FONTS};
+use glam::Vec3A;
 use stats::stats::Stats;
 use std::{sync::Arc, thread};
 
 use crossbeam_channel::Sender;
-use nalgebra::Vector3;
 use render::{camera::Camera, raytracer::render_scene_save_to_file};
 use scene::generator::make_random_balls_scene;
 use ui::{pixel::PixelBatchUpdate, window::Window};
@@ -29,9 +28,9 @@ fn ray_trace(width: u32, height: u32, pixel_batch_sender: Sender<PixelBatchUpdat
     let camera = Camera::new(
         width,
         height,
-        Vector3::<f32>::new(13.0, 2.0, 3.0),
-        Vector3::<f32>::new(0.0, 0.0, 0.0),
-        Vector3::<f32>::new(0.0, 1.0, 0.0),
+        Vec3A::new(13.0, 2.0, 3.0),
+        Vec3A::new(0.0, 0.0, 0.0),
+        Vec3A::new(0.0, 1.0, 0.0),
         20.0,
         0.0,
         0.0,
