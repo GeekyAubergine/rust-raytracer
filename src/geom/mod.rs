@@ -1,2 +1,2 @@
-pub mod shapes;
-pub mod bvh;
+pub mod bounding_box;
+pub mod shape;

@@ -1,10 +1,10 @@
 use glam::Vec3A;
-use stats::stats::Stats;
+use scene::Generator::make_random_balls_scene;
+use stats::Stats;
 use std::{sync::Arc, thread};
 
 use crossbeam_channel::Sender;
 use render::{camera::Camera, raytracer::render_scene_save_to_file};
-use scene::generator::make_random_balls_scene;
 use ui::{pixel::PixelBatchUpdate, window::Window};
 
 mod file;

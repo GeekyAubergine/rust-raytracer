@@ -1,7 +1,7 @@
 use glam::Vec3A;
 use rand::Rng;
 
-use crate::{maths::vector::random_point_in_unit_sphere, ray::ray::Ray};
+use crate::{maths::random_point_in_unit_sphere, ray::ray::Ray};
 
 
 pub(crate) fn reflect_Vec3Af32(v1: Vec3A, v2: Vec3A) -> Vec3A {

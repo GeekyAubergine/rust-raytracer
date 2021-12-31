@@ -4,13 +4,12 @@ use crossbeam_channel::Sender;
 use rayon::iter::{IntoParallelIterator, ParallelIterator};
 
 use crate::{
-    file::file::save_png_from_pixel_data,
-    geom::bvh::bvh_node::BVHNode,
+    file::save_png_from_pixel_data,
     ray::{ray::Ray, ray_collider::RayCollider},
     render::color::Color,
-    scene::scene::Scene,
-    stats::stats::Stats,
-    ui::pixel::{Pixel, PixelBatchUpdate, PixelsData},
+    scene::Scene,
+    stats::Stats,
+    ui::pixel::{Pixel, PixelBatchUpdate, PixelsData}, geom::bounding_box::BVH::BVHNode,
 };
 
 use super::camera::Camera;

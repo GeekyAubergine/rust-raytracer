@@ -2,7 +2,7 @@ use glam::Vec3A;
 
 use crate::{
     ray::{ray::Ray, ray_collider::RayCollision},
-    render::color::Color, maths::vector::{random_point_in_unit_sphere, is_Vec3Af32_near_zero},
+    render::color::Color, maths::{random_point_in_unit_sphere, is_Vec3Af32_near_zero},
 };
 
 use super::material::{Material, MaterialCollisionResult};

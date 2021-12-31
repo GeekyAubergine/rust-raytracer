@@ -1,7 +1,7 @@
 use glam::Vec3A;
 
 use crate::{
-    maths::{maths::random_f32_between, vector::random_point_in_unit_disk},
+    maths::{random_f32_between, random_point_in_unit_disk},
     ray::ray::Ray,
 };
 
