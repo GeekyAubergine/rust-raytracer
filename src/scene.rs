@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use crate::geom::shape::Shape;
+use crate::shape::Shape;
 
 type SyncedShaped = dyn Shape + Send + Sync;
 
@@ -27,8 +27,9 @@ pub mod Generator {
     use rand::Rng;
 
     use crate::{
-        ray::materials::{dielectric::Dielectric, lambertian::Lambertian, metal::Metal},
-        render::color::Color, geom::shape::Sphere,
+        color::Color,
+        material::materials::{Dielectric, Lambertian, Metal},
+        shape::Sphere,
     };
 
     use super::Scene;

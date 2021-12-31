@@ -2,7 +2,7 @@ use glam::Vec3A;
 
 use crate::{
     maths::{random_f32_between, random_point_in_unit_disk},
-    ray::ray::Ray,
+    ray::Ray,
 };
 
 #[derive(Clone, Copy, Debug)]

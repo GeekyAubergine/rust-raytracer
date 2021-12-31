@@ -2,13 +2,9 @@ use std::sync::Arc;
 
 use glam::Vec3A;
 
-use crate::ray::{
-    materials::material::Material,
-    ray::Ray,
-    ray_collider::{collide_ray_with_sphere, RayCollider, RayCollision},
-};
+use crate::{ray::{Ray, RayCollision, RayCollider, collide_ray_with_sphere}, material::Material};
 
-use super::bounding_box::{BoundingBox, AABB, build_surrounding_bounding_box};
+use super::bounding_box::{build_surrounding_bounding_box, BoundingBox, AABB};
 
 pub trait Shape {
     fn collide_ray(&self, ray: &Ray, t_min: f32, t_max: f32) -> Option<RayCollision>;

@@ -5,11 +5,12 @@ use rayon::iter::{IntoParallelIterator, ParallelIterator};
 
 use crate::{
     file::save_png_from_pixel_data,
-    ray::{ray::Ray, ray_collider::RayCollider},
-    render::color::Color,
+    bounding_box::bvh::BVHNode,
+    ray::{Ray, RayCollider},
+    color::Color,
     scene::Scene,
     stats::Stats,
-    ui::pixel::{Pixel, PixelBatchUpdate, PixelsData}, geom::bounding_box::BVH::BVHNode,
+    ui::pixel::{Pixel, PixelBatchUpdate, PixelsData},
 };
 
 use super::camera::Camera;
@@ -23,12 +24,7 @@ struct PixelChunk {
     chunk_size: u32,
 }
 
-fn ray_color(
-    bvh_tree: &BVHNode,
-    scene: &Arc<Scene>,
-    ray: &Ray,
-    depth: u32,
-) -> Color {
+fn ray_color(bvh_tree: &BVHNode, scene: &Arc<Scene>, ray: &Ray, depth: u32) -> Color {
     if depth == 0 {
         return Color::zero();
     }

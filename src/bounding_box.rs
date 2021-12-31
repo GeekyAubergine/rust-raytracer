@@ -1,6 +1,6 @@
 use glam::Vec3A;
 
-use crate::ray::ray::Ray;
+use crate::ray::Ray;
 
 #[derive(Clone, Copy, Debug)]
 pub struct AABB {
@@ -85,18 +85,18 @@ pub trait BoundingBox {
     fn get_bounding_box(&self, frame_start_time: f32, frame_end_time: f32) -> AABB;
 }
 
-pub mod BVH {
+pub mod bvh {
     use std::{cmp::Ordering, sync::Arc};
 
     use uuid::Uuid;
 
     use crate::{
-        geom::shape::Shape,
+        shape::Shape,
         maths::random_usize_between,
-        ray::{ray::Ray, ray_collider::RayCollision},
+        ray::{Ray, RayCollision},
     };
 
-    use super::{AABB, build_surrounding_bounding_box};
+    use super::{build_surrounding_bounding_box, AABB};
 
     type SyncedShaped = dyn Shape + Send + Sync;
 

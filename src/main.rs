@@ -1,19 +1,24 @@
+use camera::Camera;
 use glam::Vec3A;
+use raytracer::render_scene_save_to_file;
 use scene::Generator::make_random_balls_scene;
 use stats::Stats;
 use std::{sync::Arc, thread};
 
 use crossbeam_channel::Sender;
-use render::{camera::Camera, raytracer::render_scene_save_to_file};
 use ui::{pixel::PixelBatchUpdate, window::Window};
 
+mod bounding_box;
+mod camera;
+mod color;
 mod file;
-mod geom;
+mod material;
 mod maths;
 mod ray;
-mod render;
+mod raytracer;
 mod scene;
 mod stats;
+mod shape;
 mod ui;
 
 const IMAGE_WIDTH: u32 = 1080;
