@@ -35,7 +35,7 @@ fn ray_color(
     }
 
     if let Some(ray_collision) = bvh_tree.collide_ray(&ray, 0.001, f32::INFINITY) {
-        if let Some(material_scatter) = ray_collision.material.scatter(&ray, &ray_collision) {
+        if let Some(material_scatter) = ray_collision.material().scatter(&ray, &ray_collision) {
             return material_scatter.color
                 * ray_color(&bvh_tree, &scene, &material_scatter.ray, depth - 1);
         } else {
@@ -114,7 +114,7 @@ pub fn render_scene(
 
     let samples_per_pixel = samples_per_pixel_side * samples_per_pixel_side;
 
-    let bvh_tree = BVHNode::new(scene.shapes.clone(), 0.0, 1.0);
+    let bvh_tree = BVHNode::build_tree(scene.shapes.clone(), 0.0, 1.0);
 
     stats
         .clone()

@@ -1,16 +1,21 @@
 use std::{cmp::Ordering, sync::Arc};
 
-use crate::{geom::shapes::shape::Shape, maths::maths::random_usize_between, ray::{ray::Ray, ray_collider::RayCollision}};
+use uuid::Uuid;
 
-use super::{
-    aabb::{build_surrounding_bounding_box, AABB},
+use crate::{
+    geom::shapes::shape::Shape,
+    maths::maths::random_usize_between,
+    ray::{ray::Ray, ray_collider::RayCollision},
 };
+
+use super::aabb::{build_surrounding_bounding_box, AABB};
 
 type SyncedShaped = dyn Shape + Send + Sync;
 
 type ArcShape = Arc<SyncedShaped>;
 
 pub struct BVHNode {
+    uuid: Uuid,
     left: ArcShape,
     right: ArcShape,
     pub aabb: AABB,
@@ -128,11 +133,12 @@ fn sub_divide_children_into_node(
 
         let aabb = build_surrounding_bounding_box(box_left, box_right);
 
-        return BVHNode {
-            left: Arc::new(left_node),
-            right: Arc::new(right_node),
+        return BVHNode::new(
+            Uuid::new_v4(),
+            Arc::new(left_node),
+            Arc::new(right_node),
             aabb,
-        };
+        );
     } else if children.len() == 2 {
         match comparator(&children[0], &children[1]) {
             Ordering::Greater => {
@@ -156,18 +162,32 @@ fn sub_divide_children_into_node(
 
                 let aabb = build_surrounding_bounding_box(box_left, box_right);
 
-                return BVHNode {
-                    left: actual_left.clone(),
-                    right: actual_right.clone(),
+                return BVHNode::new(
+                    Uuid::new_v4(),
+                    actual_left.clone(),
+                    actual_right.clone(),
                     aabb,
-                };
+                );
             }
         },
     }
 }
 
 impl BVHNode {
-    pub fn new(children: Vec<ArcShape>, frame_start_time: f32, frame_end_time: f32) -> BVHNode {
+    pub fn new(uuid: Uuid, left: ArcShape, right: ArcShape, aabb: AABB) -> BVHNode {
+        return BVHNode {
+            uuid,
+            left,
+            right,
+            aabb,
+        };
+    }
+
+    pub fn build_tree(
+        children: Vec<ArcShape>,
+        frame_start_time: f32,
+        frame_end_time: f32,
+    ) -> BVHNode {
         return sub_divide_children_into_node(children, frame_start_time, frame_end_time);
     }
 }
@@ -184,7 +204,7 @@ impl Shape for BVHNode {
             match left_collision_copy {
                 None => {}
                 Some(left_collision) => {
-                    new_t_max = left_collision.time;
+                    new_t_max = left_collision.time();
                 }
             }
             let right_collision = self.right.collide_ray(ray, t_min, new_t_max);

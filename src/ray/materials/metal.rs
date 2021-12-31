@@ -21,8 +21,8 @@ impl Metal {
 
 impl Material for Metal {
     fn scatter(&self, ray: &Ray, hit_record: &RayCollision) -> Option<MaterialCollisionResult> {
-        let scattered = reflect_ray(ray, hit_record.point, hit_record.normal, self.smoothness);
-        if scattered.direction.dot(hit_record.normal) > 0.0 {
+        let scattered = reflect_ray(ray, hit_record.point(), hit_record.normal(), self.smoothness);
+        if scattered.direction.dot(hit_record.normal()) > 0.0 {
             return Some(MaterialCollisionResult {
                 color: self.albedo,
                 ray: scattered,

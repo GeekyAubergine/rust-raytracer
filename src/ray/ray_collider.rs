@@ -1,15 +1,17 @@
 use std::sync::Arc;
 
 use glam::Vec3A;
+use uuid::Uuid;
 
 use super::{materials::material::Material, ray::Ray};
 
 pub struct RayCollision {
-    pub point: Vec3A,
-    pub normal: Vec3A,
-    pub time: f32,
-    pub on_front_face: bool,
-    pub material: Arc<dyn Material>,
+    point: Vec3A,
+    normal: Vec3A,
+    time: f32,
+    on_front_face: bool,
+    material: Arc<dyn Material>,
+    bvh_node_uuids: Vec<Uuid>,
 }
 
 impl RayCollision {
@@ -31,7 +33,29 @@ impl RayCollision {
             time,
             on_front_face: front_face,
             material: material.clone(),
+            bvh_node_uuids: Vec::new(),
         };
+    }
+    pub fn add_bvh_node_uuid(&mut self, node_uuid: Uuid) {
+        self.bvh_node_uuids.push(node_uuid);
+    }
+    pub fn point(&self) -> Vec3A {
+        return self.point;
+    }
+    pub fn normal(&self) -> Vec3A {
+        return self.normal;
+    }
+    pub fn time(&self) -> f32 {
+        return self.time;
+    }
+    pub fn on_front_face(&self) -> bool {
+        return self.on_front_face;
+    }
+    pub fn material(&self) -> &dyn Material {
+        return self.material.as_ref();
+    }
+    pub fn bvh_node_uuids(&self) -> &Vec<Uuid> {
+        return &self.bvh_node_uuids;
     }
 }
 

@@ -27,9 +27,9 @@ impl Material for Dielectric {
             color: Color::new(self.transparency, self.transparency, self.transparency),
             ray: refract_ray(
                 ray,
-                hit_record.point,
-                hit_record.normal,
-                hit_record.on_front_face,
+                hit_record.point(),
+                hit_record.normal(),
+                hit_record.on_front_face(),
                 self.refraction_index,
             ),
         });
