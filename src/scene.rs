@@ -13,14 +13,14 @@ pub struct Scene {
 
 impl Scene {
     pub fn new() -> Scene {
-        return Scene { shapes: Vec::new() };
+        Scene { shapes: Vec::new() }
     }
     pub fn add_shape(&mut self, shape: ArcShape) {
         self.shapes.push(shape)
     }
 }
 
-pub mod Generator {
+pub mod generator {
     use std::sync::Arc;
 
     use glam::Vec3A;
@@ -101,6 +101,6 @@ pub mod Generator {
         scene.add_shape(Arc::new(sphere2));
         scene.add_shape(Arc::new(sphere3));
 
-        return scene;
+        scene
     }
 }

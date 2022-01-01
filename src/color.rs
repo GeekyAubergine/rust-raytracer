@@ -12,39 +12,39 @@ pub struct Color {
 
 impl Color {
     pub fn new(r: f32, g: f32, b: f32) -> Color {
-        return Color { r, b, g };
+        Color { r, b, g }
     }
     pub fn zero() -> Color {
-        return Color::new(0.0, 0.0, 0.0);
+        Color::new(0.0, 0.0, 0.0)
     }
     pub fn one() -> Color {
-        return Color::new(1.0, 1.0, 1.0);
+        Color::new(1.0, 1.0, 1.0)
     }
     pub fn rgba(self) -> Rgba<u8> {
-        return image::Rgba([
+        image::Rgba([
             (255.0 * self.r) as u8,
             (255.0 * self.g) as u8,
             (255.0 * self.b) as u8,
-            255 as u8,
-        ]);
+            255_u8,
+        ])
     }
     pub fn r(&self) -> &f32 {
-        return &self.r;
+        &self.r
     }
     pub fn g(&self) -> &f32 {
-        return &self.g;
+        &self.g
     }
     pub fn b(&self) -> &f32 {
-        return &self.b;
+        &self.b
     }
     pub fn random(range: Range<f32>) -> Color {
         let mut rng = rand::thread_rng();
 
-        return Color {
+        Color {
             r: rng.gen_range(range.clone()),
             b: rng.gen_range(range.clone()),
-            g: rng.gen_range(range.clone()),
-        };
+            g: rng.gen_range(range),
+        }
     }
 }
 
@@ -61,7 +61,7 @@ impl Add for Color {
 }
 
 impl AddAssign for Color {
-    fn add_assign(&mut self, other: Color) -> () {
+    fn add_assign(&mut self, other: Color) {
         *self = Color {
             r: self.r + other.r,
             g: self.g + other.g,
@@ -83,7 +83,7 @@ impl Sub for Color {
 }
 
 impl SubAssign for Color {
-    fn sub_assign(&mut self, other: Color) -> () {
+    fn sub_assign(&mut self, other: Color) {
         *self = Color {
             r: self.r - other.r,
             g: self.g - other.g,
@@ -105,7 +105,7 @@ impl Mul<f32> for Color {
 }
 
 impl MulAssign<f32> for Color {
-    fn mul_assign(&mut self, other: f32) -> () {
+    fn mul_assign(&mut self, other: f32) {
         *self = Color {
             r: self.r * other,
             g: self.g * other,
@@ -151,7 +151,7 @@ impl Div<f32> for Color {
 }
 
 impl DivAssign<f32> for Color {
-    fn div_assign(&mut self, other: f32) -> () {
+    fn div_assign(&mut self, other: f32) {
         *self = Color {
             r: self.r / other,
             g: self.g / other,

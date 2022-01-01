@@ -52,7 +52,7 @@ fn recalculate_camera(settings: CameraSettings) -> Camera {
         settings.camera_position - horizontal / 2.0 - vertical / 2.0 - focus_distance * cw;
     let lens_radius = settings.aperture / 2.0;
 
-    return Camera {
+    Camera {
         settings,
         metadata: CameraMetadata {
             horizontal,
@@ -62,7 +62,7 @@ fn recalculate_camera(settings: CameraSettings) -> Camera {
             lower_left_corner,
             lens_radius,
         },
-    };
+    }
 }
 
 impl Camera {
@@ -76,7 +76,7 @@ impl Camera {
         aperture: f32,
         shutter: f32,
     ) -> Camera {
-        return recalculate_camera(CameraSettings {
+        recalculate_camera(CameraSettings {
             screen_width: width,
             screen_height: height,
             camera_position,
@@ -86,42 +86,30 @@ impl Camera {
             aspect_ratio: width as f32 / height as f32,
             aperture,
             shutter,
-        });
+        })
     }
     pub fn screen_width(&self) -> u32 {
-        return self.settings.screen_width;
+        self.settings.screen_width
     }
     pub fn screen_height(&self) -> u32 {
-        return self.settings.screen_height;
+        self.settings.screen_height
     }
-    pub fn position(&self) -> Vec3A {
-        return self.settings.camera_position;
-    }
-    pub fn look_at(&self) -> Vec3A {
-        return self.settings.look_at_position;
-    }
-    pub fn aspect_ratio(&self) -> f32 {
-        return self.settings.aspect_ratio;
-    }
-    pub fn field_of_view(&self) -> f32 {
-        return self.settings.field_of_view;
-    }
-    pub fn set_camera_position(&mut self, camera_position: Vec3A) {
-        let mut settings = self.settings;
-        settings.camera_position = camera_position;
-        *self = recalculate_camera(settings);
-    }
-    pub fn set_look_at(&mut self, look_at: Vec3A) {
-        let mut settings = self.settings;
-        settings.look_at_position = look_at;
-        *self = recalculate_camera(settings);
-    }
+    // pub fn set_camera_position(&mut self, camera_position: Vec3A) {
+    //     let mut settings = self.settings;
+    //     settings.camera_position = camera_position;
+    //     *self = recalculate_camera(settings);
+    // }
+    // pub fn set_look_at(&mut self, look_at: Vec3A) {
+    //     let mut settings = self.settings;
+    //     settings.look_at_position = look_at;
+    //     *self = recalculate_camera(settings);
+    // }
     pub fn make_ray(&self, u: f32, v: f32) -> Ray {
         let random_disk = self.metadata.lens_radius * random_point_in_unit_disk();
         let offset =
             self.metadata.camera_u * random_disk.x + self.metadata.camera_v * random_disk.y;
 
-        return Ray::new(
+        Ray::new(
             self.settings.camera_position + offset,
             self.metadata.lower_left_corner
                 + self.metadata.horizontal * u
@@ -129,6 +117,6 @@ impl Camera {
                 - self.settings.camera_position
                 - offset,
             random_f32_between(0.0, self.settings.shutter),
-        );
+        )
     }
 }

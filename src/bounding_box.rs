@@ -3,14 +3,14 @@ use glam::Vec3A;
 use crate::ray::Ray;
 
 #[derive(Clone, Copy, Debug)]
-pub struct AABB {
+pub struct Aabb {
     pub minimum: Vec3A,
     pub maximum: Vec3A,
 }
 
-impl AABB {
-    pub fn new(minimum: Vec3A, maximum: Vec3A) -> AABB {
-        return AABB { minimum, maximum };
+impl Aabb {
+    pub fn new(minimum: Vec3A, maximum: Vec3A) -> Aabb {
+        Aabb { minimum, maximum }
     }
     pub fn does_ray_collide(&self, ray: &Ray, t_min: f32, t_max: f32) -> bool {
         let inverse_ray_direction = ray.direction.recip();
@@ -62,11 +62,11 @@ impl AABB {
             return false;
         }
 
-        return true;
+        true
     }
 }
 
-pub fn build_surrounding_bounding_box(box_a: AABB, box_b: AABB) -> AABB {
+pub fn build_surrounding_bounding_box(box_a: Aabb, box_b: Aabb) -> Aabb {
     let minimum = Vec3A::new(
         box_a.minimum.x.min(box_b.minimum.x),
         box_a.minimum.y.min(box_b.minimum.y),
@@ -78,11 +78,11 @@ pub fn build_surrounding_bounding_box(box_a: AABB, box_b: AABB) -> AABB {
         box_a.maximum.z.max(box_b.maximum.z),
     );
 
-    return AABB::new(minimum, maximum);
+    Aabb::new(minimum, maximum)
 }
 
 pub trait BoundingBox {
-    fn get_bounding_box(&self, frame_start_time: f32, frame_end_time: f32) -> AABB;
+    fn get_bounding_box(&self, frame_start_time: f32, frame_end_time: f32) -> Aabb;
 }
 
 pub mod bvh {
@@ -91,12 +91,12 @@ pub mod bvh {
     use uuid::Uuid;
 
     use crate::{
-        shape::Shape,
         maths::random_usize_between,
         ray::{Ray, RayCollision},
+        shape::Shape,
     };
 
-    use super::{build_surrounding_bounding_box, AABB};
+    use super::{build_surrounding_bounding_box, Aabb};
 
     type SyncedShaped = dyn Shape + Send + Sync;
 
@@ -106,14 +106,14 @@ pub mod bvh {
         uuid: Uuid,
         left: ArcShape,
         right: ArcShape,
-        pub aabb: AABB,
+        pub aabb: Aabb,
     }
 
     fn sort_aabb_by_x(
         frame_start_time: f32,
         frame_end_time: f32,
     ) -> Box<dyn FnMut(&ArcShape, &ArcShape) -> Ordering> {
-        return Box::new(move |a, b| {
+        Box::new(move |a, b| {
             let ax = a
                 .get_bounding_box(frame_start_time, frame_end_time)
                 .minimum
@@ -130,15 +130,15 @@ pub mod bvh {
                 return Ordering::Equal;
             }
 
-            return Ordering::Greater;
-        });
+            Ordering::Greater
+        })
     }
 
     fn sort_aabb_by_y(
         frame_start_time: f32,
         frame_end_time: f32,
     ) -> Box<dyn FnMut(&ArcShape, &ArcShape) -> Ordering> {
-        return Box::new(move |a, b| {
+        Box::new(move |a, b| {
             let ay = a
                 .get_bounding_box(frame_start_time, frame_end_time)
                 .minimum
@@ -155,15 +155,15 @@ pub mod bvh {
                 return Ordering::Equal;
             }
 
-            return Ordering::Greater;
-        });
+            Ordering::Greater
+        })
     }
 
     fn sort_aabb_by_z(
         frame_start_time: f32,
         frame_end_time: f32,
     ) -> Box<dyn FnMut(&ArcShape, &ArcShape) -> Ordering> {
-        return Box::new(move |a, b| {
+        Box::new(move |a, b| {
             let az = a
                 .get_bounding_box(frame_start_time, frame_end_time)
                 .minimum
@@ -180,8 +180,8 @@ pub mod bvh {
                 return Ordering::Equal;
             }
 
-            return Ordering::Greater;
-        });
+            Ordering::Greater
+        })
     }
 
     fn sub_divide_children_into_node(
@@ -189,7 +189,7 @@ pub mod bvh {
         frame_start_time: f32,
         frame_end_time: f32,
     ) -> BVHNode {
-        if children.len() == 0 {
+        if children.is_empty() {
             panic!("No children given",);
         }
 
@@ -203,41 +203,45 @@ pub mod bvh {
             _ => panic!("Unexpected axis value"),
         };
 
-        if children.len() > 2 {
-            let mut sorted_children = children.clone();
-            sorted_children.sort_by(comparator);
+        match children.len().cmp(&2) {
+            Ordering::Greater => {
+                let mut sorted_children = children.clone();
+                sorted_children.sort_by(comparator);
 
-            let mid = sorted_children.len() / 2;
-            let mut left_children = sorted_children;
-            let right_children = left_children.split_off(mid);
+                let mid = sorted_children.len() / 2;
+                let mut left_children = sorted_children;
+                let right_children = left_children.split_off(mid);
 
-            let left_node =
-                sub_divide_children_into_node(left_children, frame_start_time, frame_end_time);
-            let right_node =
-                sub_divide_children_into_node(right_children, frame_start_time, frame_end_time);
+                let left_node =
+                    sub_divide_children_into_node(left_children, frame_start_time, frame_end_time);
+                let right_node =
+                    sub_divide_children_into_node(right_children, frame_start_time, frame_end_time);
 
-            let box_left = left_node.get_bounding_box(frame_start_time, frame_end_time);
-            let box_right = right_node.get_bounding_box(frame_start_time, frame_end_time);
+                let box_left = left_node.get_bounding_box(frame_start_time, frame_end_time);
+                let box_right = right_node.get_bounding_box(frame_start_time, frame_end_time);
 
-            let aabb = build_surrounding_bounding_box(box_left, box_right);
+                let aabb = build_surrounding_bounding_box(box_left, box_right);
 
-            return BVHNode::new(
-                Uuid::new_v4(),
-                Arc::new(left_node),
-                Arc::new(right_node),
-                aabb,
-            );
-        } else if children.len() == 2 {
-            match comparator(&children[0], &children[1]) {
-                Ordering::Greater => {
-                    left = children.get(1);
-                    right = children.get(0);
-                }
-                _ => {
-                    left = children.get(0);
-                    right = children.get(1);
+                return BVHNode::new(
+                    Uuid::new_v4(),
+                    Arc::new(left_node),
+                    Arc::new(right_node),
+                    aabb,
+                );
+            },
+            Ordering::Equal => {
+                match comparator(&children[0], &children[1]) {
+                    Ordering::Greater => {
+                        left = children.get(1);
+                        right = children.get(0);
+                    }
+                    _ => {
+                        left = children.get(0);
+                        right = children.get(1);
+                    }
                 }
             }
+            _ => {},
         }
 
         match left {
@@ -250,25 +254,25 @@ pub mod bvh {
 
                     let aabb = build_surrounding_bounding_box(box_left, box_right);
 
-                    return BVHNode::new(
+                    BVHNode::new(
                         Uuid::new_v4(),
                         actual_left.clone(),
                         actual_right.clone(),
                         aabb,
-                    );
+                    )
                 }
             },
         }
     }
 
     impl BVHNode {
-        pub fn new(uuid: Uuid, left: ArcShape, right: ArcShape, aabb: AABB) -> BVHNode {
-            return BVHNode {
+        pub fn new(uuid: Uuid, left: ArcShape, right: ArcShape, aabb: Aabb) -> BVHNode {
+            BVHNode {
                 uuid,
                 left,
                 right,
                 aabb,
-            };
+            }
         }
 
         pub fn build_tree(
@@ -276,7 +280,7 @@ pub mod bvh {
             frame_start_time: f32,
             frame_end_time: f32,
         ) -> BVHNode {
-            return sub_divide_children_into_node(children, frame_start_time, frame_end_time);
+            sub_divide_children_into_node(children, frame_start_time, frame_end_time)
         }
     }
 
@@ -307,11 +311,11 @@ pub mod bvh {
                 }
             }
 
-            return None;
+            None
         }
 
-        fn get_bounding_box(&self, _frame_start_time: f32, _frame_end_time: f32) -> AABB {
-            return self.aabb;
+        fn get_bounding_box(&self, _frame_start_time: f32, _frame_end_time: f32) -> Aabb {
+            self.aabb
         }
     }
 }

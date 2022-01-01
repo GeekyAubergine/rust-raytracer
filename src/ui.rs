@@ -11,16 +11,16 @@ pub mod pixel {
 
     impl Pixel {
         pub fn new(x: u32, y: u32, color: Color) -> Pixel {
-            return Pixel {
+            Pixel {
                 position: Point2::<u32>::new(x, y),
                 color,
-            };
+            }
         }
         pub fn position(&self) -> Point2<u32> {
-            return self.position;
+            self.position
         }
         pub fn color(&self) -> Color {
-            return self.color;
+            self.color
         }
     }
 
@@ -41,7 +41,7 @@ pub mod pixel {
             }
         }
 
-        return out;
+        out
     }
 }
 
@@ -70,46 +70,39 @@ pub mod text {
             data = GREEK_FONTS.get(char);
         }
 
-        match data {
-            Some(glyph) => {
-                for y in 0..glyph.len() {
-                    let row = glyph[y];
-                    for x in 0..8 {
-                        let pixel = row >> x & 1;
-                        let x = x * 2;
-                        let y = y * 2;
-                        match pixel {
-                            1 => {
-                                pixels.push(Pixel::new(
-                                    (x + x_pos) as u32,
-                                    (y + y_pos) as u32,
-                                    Color::one(),
-                                ));
-                                pixels.push(Pixel::new(
-                                    (x + 1 + x_pos) as u32,
-                                    (y + y_pos) as u32,
-                                    Color::one(),
-                                ));
-                                pixels.push(Pixel::new(
-                                    (x + x_pos) as u32,
-                                    (y + 1 + y_pos) as u32,
-                                    Color::one(),
-                                ));
-                                pixels.push(Pixel::new(
-                                    (x + 1 + x_pos) as u32,
-                                    (y + 1 + y_pos) as u32,
-                                    Color::one(),
-                                ));
-                            }
-                            _ => {}
-                        }
+        if let Some(glyph) = data {
+            for (y, row) in glyph.iter().enumerate() {
+                for x in 0..8 {
+                    let pixel = row >> x & 1;
+                    let x = x * 2;
+                    let y = y * 2;
+                    if pixel == 1 {
+                        pixels.push(Pixel::new(
+                            (x + x_pos) as u32,
+                            (y + y_pos) as u32,
+                            Color::one(),
+                        ));
+                        pixels.push(Pixel::new(
+                            (x + 1 + x_pos) as u32,
+                            (y + y_pos) as u32,
+                            Color::one(),
+                        ));
+                        pixels.push(Pixel::new(
+                            (x + x_pos) as u32,
+                            (y + 1 + y_pos) as u32,
+                            Color::one(),
+                        ));
+                        pixels.push(Pixel::new(
+                            (x + 1 + x_pos) as u32,
+                            (y + 1 + y_pos) as u32,
+                            Color::one(),
+                        ));
                     }
                 }
             }
-            None => {}
         }
 
-        return pixels;
+        pixels
     }
 
     fn render_string_line_at_position(x_pos: usize, y_pos: usize, string: &str) -> Vec<Pixel> {
@@ -135,20 +128,20 @@ pub mod text {
             .map(|(index, char)| {
                 let x = x_pos
                     + (GLYPH_WIDTH + GLYPH_PADDING_HORIZONTAL + GLYPH_PADDING_HORIZONTAL) * index;
-                return render_char_at_position(
+                render_char_at_position(
                     x + GLYPH_PADDING_HORIZONTAL,
                     y_pos + GLYPH_PADDING_VERTICAL,
                     char,
-                );
+                )
             })
             .reduce(|acc: Vec<Pixel>, arr: Vec<Pixel>| {
-                let mut out = acc.clone();
+                let mut out = acc;
 
                 for el in arr {
                     out.push(el);
                 }
 
-                return out;
+                out
             });
 
         match pixels_opt {
@@ -157,11 +150,9 @@ pub mod text {
                 for pixel in glyph_pixels {
                     pixels.push(pixel);
                 }
-                return pixels;
+                pixels
             }
-            None => {
-                return background_pixels;
-            }
+            None => background_pixels,
         }
     }
 
@@ -171,30 +162,26 @@ pub mod text {
         string: String,
     ) -> PixelBatchUpdate {
         let pixels_opt = string
-            .split("\n")
+            .split('\n')
             .enumerate()
             .map(|(index, line)| {
                 let y = y_pos
                     + (GLYPH_HEIGHT + GLYPH_PADDING_VERTICAL + GLYPH_PADDING_VERTICAL) * index;
-                return render_string_line_at_position(x_pos, y, line);
+                render_string_line_at_position(x_pos, y, line)
             })
             .reduce(|acc: Vec<Pixel>, arr: Vec<Pixel>| {
-                let mut out = acc.clone();
+                let mut out = acc;
 
                 for el in arr {
                     out.push(el);
                 }
 
-                return out;
+                out
             });
 
         match pixels_opt {
-            Some(pixels) => {
-                return PixelBatchUpdate { pixels };
-            }
-            None => {
-                return PixelBatchUpdate { pixels: Vec::new() };
-            }
+            Some(pixels) => PixelBatchUpdate { pixels },
+            None => PixelBatchUpdate { pixels: Vec::new() },
         }
     }
 }
@@ -230,13 +217,13 @@ pub mod window {
             texture_height: u32,
             pixel_update_batch_receiver: crossbeam_channel::Receiver<PixelBatchUpdate>,
         ) -> Window {
-            return Window {
+            Window {
                 window_width,
                 window_height,
                 texture_width,
                 texture_height,
                 pixel_update_batch_receiver,
-            };
+            }
         }
         pub fn init(self) -> Result<(), Error> {
             let event_loop = EventLoop::new();

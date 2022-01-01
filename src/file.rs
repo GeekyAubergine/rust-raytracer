@@ -1,10 +1,10 @@
 use image::Rgba;
 
-use crate::ui::pixel::PixelsData;
+use crate::ui::pixel::Pixel;
 
-pub fn save_png_from_pixel_data(path: String, pixels: &PixelsData) {
+pub fn save_png_from_pixel_data(path: String, pixels: &[Vec<Pixel>]) {
     let height = pixels.len();
-
+ 
     if height < 1 {
         return;
     }
@@ -14,10 +14,9 @@ pub fn save_png_from_pixel_data(path: String, pixels: &PixelsData) {
     let mut image_buffer: image::ImageBuffer<Rgba<u8>, Vec<u8>> =
         image::ImageBuffer::new(width as u32, height as u32);
 
-    for y in 0..pixels.len() {
-        let row = &pixels[y];
-        for x in 0..row.len() {
-            let color = pixels[y][x].color().rgba();
+    for (y, row) in pixels.iter().enumerate() {
+        for (x, pixel) in row.iter().enumerate() {
+            let color = pixel.color().rgba();
             image_buffer.put_pixel(x as u32, y as u32, color)
         }
     }

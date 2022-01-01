@@ -1,7 +1,7 @@
 use camera::Camera;
 use glam::Vec3A;
 use raytracer::render_scene_save_to_file;
-use scene::Generator::make_random_balls_scene;
+use scene::generator::make_random_balls_scene;
 use stats::Stats;
 use std::{sync::Arc, thread};
 

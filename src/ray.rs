@@ -13,15 +13,15 @@ pub struct Ray {
 
 impl Ray {
     pub fn new(origin: Vec3A, direction: Vec3A, time: f32) -> Ray {
-        return Ray {
+        Ray {
             origin,
             direction,
             time,
-        };
+        }
     }
 
     pub fn at(&self, t: f32) -> Vec3A {
-        return self.origin + self.direction * t;
+        self.origin + self.direction * t
     }
 }
 
@@ -47,35 +47,35 @@ impl RayCollision {
         if !front_face {
             normal *= -1.0;
         }
-        return RayCollision {
+        RayCollision {
             point,
             normal,
             time,
             on_front_face: front_face,
             material: material.clone(),
             bvh_node_uuids: Vec::new(),
-        };
+        }
     }
     pub fn add_bvh_node_uuid(&mut self, node_uuid: Uuid) {
         self.bvh_node_uuids.push(node_uuid);
     }
     pub fn point(&self) -> Vec3A {
-        return self.point;
+        self.point
     }
     pub fn normal(&self) -> Vec3A {
-        return self.normal;
+        self.normal
     }
     pub fn time(&self) -> f32 {
-        return self.time;
+        self.time
     }
     pub fn on_front_face(&self) -> bool {
-        return self.on_front_face;
+        self.on_front_face
     }
     pub fn material(&self) -> &dyn Material {
-        return self.material.as_ref();
+        self.material.as_ref()
     }
     pub fn bvh_node_uuids(&self) -> &Vec<Uuid> {
-        return &self.bvh_node_uuids;
+        &self.bvh_node_uuids
     }
 }
 
@@ -115,5 +115,5 @@ pub fn collide_ray_with_sphere(
         }
     }
 
-    return Some(root);
+    Some(root)
 }

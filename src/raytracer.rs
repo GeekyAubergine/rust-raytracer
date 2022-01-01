@@ -29,17 +29,17 @@ fn ray_color(bvh_tree: &BVHNode, scene: &Arc<Scene>, ray: &Ray, depth: u32) -> C
         return Color::zero();
     }
 
-    if let Some(ray_collision) = bvh_tree.collide_ray(&ray, 0.001, f32::INFINITY) {
-        if let Some(material_scatter) = ray_collision.material().scatter(&ray, &ray_collision) {
-            return material_scatter.color
-                * ray_color(&bvh_tree, &scene, &material_scatter.ray, depth - 1);
+    if let Some(ray_collision) = bvh_tree.collide_ray(ray, 0.001, f32::INFINITY) {
+        if let Some(material_scatter) = ray_collision.material().scatter(ray, &ray_collision) {
+            material_scatter.color
+                * ray_color(bvh_tree, scene, &material_scatter.ray, depth - 1)
         } else {
-            return Color::zero();
+            Color::zero()
         }
     } else {
         let unit_direction = ray.direction.normalize();
         let t = 0.5 * (unit_direction.y + 1.0);
-        return Color::new(1.0, 1.0, 1.0) * (1.0 - t) + Color::new(0.5, 0.7, 1.0) * t;
+        Color::new(1.0, 1.0, 1.0) * (1.0 - t) + Color::new(0.5, 0.7, 1.0) * t
     }
 }
 
@@ -67,13 +67,13 @@ fn sample_pixel(
 
             let ray = camera.make_ray(u, v);
 
-            let sample_color = ray_color(&bvh_tree, &scene, &ray, max_ray_depth);
+            let sample_color = ray_color(bvh_tree, scene, &ray, max_ray_depth);
 
             pixel_color += sample_color;
         }
     }
 
-    return pixel_color / (samples_per_pixel_side * samples_per_pixel_side) as f32;
+    pixel_color / (samples_per_pixel_side * samples_per_pixel_side) as f32
 }
 
 pub fn render_scene(
@@ -125,8 +125,8 @@ pub fn render_scene(
                     let y = y_offset + chunk.y;
                     let pixel_color = sample_pixel(
                         &bvh_tree,
-                        &scene,
-                        &camera,
+                        scene,
+                        camera,
                         x,
                         y,
                         samples_per_pixel_side,
@@ -147,18 +147,18 @@ pub fn render_scene(
 
             stats.clone().complete_chunk();
 
-            return pixel_updates;
+            pixel_updates
         })
         .reduce(
-            || Vec::new(),
+            Vec::new,
             |acc: Vec<Pixel>, arr: Vec<Pixel>| {
-                let mut out = acc.clone();
+                let mut out = acc;
 
                 for el in arr {
                     out.push(el);
                 }
 
-                return out;
+                out
             },
         );
 
@@ -168,7 +168,7 @@ pub fn render_scene(
         pixels[pixel.position().y as usize][pixel.position().x as usize] = pixel;
     }
 
-    return pixels;
+    pixels
 }
 
 pub fn render_scene_save_to_file(
@@ -187,5 +187,5 @@ pub fn render_scene_save_to_file(
         stats,
     );
     save_png_from_pixel_data(file_path, &pixel_data);
-    return pixel_data;
+    pixel_data
 }
