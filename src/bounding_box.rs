@@ -88,6 +88,7 @@ pub trait BoundingBox {
 pub mod bvh {
     use std::{cmp::Ordering, sync::Arc};
 
+    use glam::Vec3A;
     use uuid::Uuid;
 
     use crate::{
@@ -109,19 +110,23 @@ pub mod bvh {
         pub aabb: Aabb,
     }
 
+    fn bounding_box_minimum_for_shape(
+        shape: &ArcShape,
+        frame_start_time: f32,
+        frame_end_time: f32,
+    ) -> Vec3A {
+        shape
+            .get_bounding_box(frame_start_time, frame_end_time)
+            .minimum
+    }
+
     fn sort_aabb_by_x(
         frame_start_time: f32,
         frame_end_time: f32,
     ) -> Box<dyn FnMut(&ArcShape, &ArcShape) -> Ordering> {
         Box::new(move |a, b| {
-            let ax = a
-                .get_bounding_box(frame_start_time, frame_end_time)
-                .minimum
-                .x;
-            let bx = b
-                .get_bounding_box(frame_start_time, frame_end_time)
-                .minimum
-                .x;
+            let ax = bounding_box_minimum_for_shape(a, frame_start_time, frame_end_time).x;
+            let bx = bounding_box_minimum_for_shape(b, frame_start_time, frame_end_time).x;
             if ax < bx {
                 return Ordering::Less;
             }
@@ -139,14 +144,8 @@ pub mod bvh {
         frame_end_time: f32,
     ) -> Box<dyn FnMut(&ArcShape, &ArcShape) -> Ordering> {
         Box::new(move |a, b| {
-            let ay = a
-                .get_bounding_box(frame_start_time, frame_end_time)
-                .minimum
-                .y;
-            let by = b
-                .get_bounding_box(frame_start_time, frame_end_time)
-                .minimum
-                .y;
+            let ay = bounding_box_minimum_for_shape(a, frame_start_time, frame_end_time).y;
+            let by = bounding_box_minimum_for_shape(b, frame_start_time, frame_end_time).y;
             if ay < by {
                 return Ordering::Less;
             }
@@ -164,14 +163,8 @@ pub mod bvh {
         frame_end_time: f32,
     ) -> Box<dyn FnMut(&ArcShape, &ArcShape) -> Ordering> {
         Box::new(move |a, b| {
-            let az = a
-                .get_bounding_box(frame_start_time, frame_end_time)
-                .minimum
-                .z;
-            let bz = b
-                .get_bounding_box(frame_start_time, frame_end_time)
-                .minimum
-                .z;
+            let az = bounding_box_minimum_for_shape(a, frame_start_time, frame_end_time).z;
+            let bz = bounding_box_minimum_for_shape(b, frame_start_time, frame_end_time).z;
             if az < bz {
                 return Ordering::Less;
             }
@@ -228,20 +221,18 @@ pub mod bvh {
                     Arc::new(right_node),
                     aabb,
                 );
-            },
-            Ordering::Equal => {
-                match comparator(&children[0], &children[1]) {
-                    Ordering::Greater => {
-                        left = children.get(1);
-                        right = children.get(0);
-                    }
-                    _ => {
-                        left = children.get(0);
-                        right = children.get(1);
-                    }
-                }
             }
-            _ => {},
+            Ordering::Equal => match comparator(&children[0], &children[1]) {
+                Ordering::Greater => {
+                    left = children.get(1);
+                    right = children.get(0);
+                }
+                _ => {
+                    left = children.get(0);
+                    right = children.get(1);
+                }
+            },
+            _ => {}
         }
 
         match left {
