@@ -1,15 +1,37 @@
 use std::sync::Arc;
 
 use glam::Vec3A;
+use uuid::Uuid;
 
-use super::{materials::material::Material, ray::Ray};
+use crate::material::Material;
+
+pub struct Ray {
+    pub origin: Vec3A,
+    pub direction: Vec3A,
+    pub time: f32,
+}
+
+impl Ray {
+    pub fn new(origin: Vec3A, direction: Vec3A, time: f32) -> Ray {
+        Ray {
+            origin,
+            direction,
+            time,
+        }
+    }
+
+    pub fn at(&self, t: f32) -> Vec3A {
+        self.origin + self.direction * t
+    }
+}
 
 pub struct RayCollision {
-    pub point: Vec3A,
-    pub normal: Vec3A,
-    pub time: f32,
-    pub on_front_face: bool,
-    pub material: Arc<dyn Material>,
+    point: Vec3A,
+    normal: Vec3A,
+    time: f32,
+    on_front_face: bool,
+    material: Arc<dyn Material>,
+    bvh_node_uuids: Vec<Uuid>,
 }
 
 impl RayCollision {
@@ -25,13 +47,35 @@ impl RayCollision {
         if !front_face {
             normal *= -1.0;
         }
-        return RayCollision {
+        RayCollision {
             point,
             normal,
             time,
             on_front_face: front_face,
             material: material.clone(),
-        };
+            bvh_node_uuids: Vec::new(),
+        }
+    }
+    pub fn add_bvh_node_uuid(&mut self, node_uuid: Uuid) {
+        self.bvh_node_uuids.push(node_uuid);
+    }
+    pub fn point(&self) -> Vec3A {
+        self.point
+    }
+    pub fn normal(&self) -> Vec3A {
+        self.normal
+    }
+    pub fn time(&self) -> f32 {
+        self.time
+    }
+    pub fn on_front_face(&self) -> bool {
+        self.on_front_face
+    }
+    pub fn material(&self) -> &dyn Material {
+        self.material.as_ref()
+    }
+    pub fn bvh_node_uuids(&self) -> &Vec<Uuid> {
+        &self.bvh_node_uuids
     }
 }
 
@@ -71,5 +115,5 @@ pub fn collide_ray_with_sphere(
         }
     }
 
-    return Some(root);
+    Some(root)
 }

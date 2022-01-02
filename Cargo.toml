@@ -19,3 +19,4 @@ nalgebra = "0.29.0"
 font8x8 = "0.3.1"
 num-format = "0.4.0"
 glam = { version = "0.20.2", features = ["rand"] }
+uuid = { version = "0.8.2", features = ["v4"] }
