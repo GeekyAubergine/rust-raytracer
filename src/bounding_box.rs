@@ -93,37 +93,32 @@ pub mod bvh {
 
     use crate::{
         maths::random_usize_between,
-        ray::{Ray, RayCollision},
-        shape::Shape,
+        ray::{Ray, RayCollision}, collider::Collider,
     };
 
     use super::{build_surrounding_bounding_box, Aabb};
 
-    type SyncedShaped = dyn Shape + Send + Sync;
-
-    type ArcShape = Arc<SyncedShaped>;
+    type ArcCollidable = Arc<Collider>;
 
     pub struct BVHNode {
         uuid: Uuid,
-        left: ArcShape,
-        right: ArcShape,
+        left: ArcCollidable,
+        right: ArcCollidable,
         pub aabb: Aabb,
     }
 
     fn bounding_box_minimum_for_shape(
-        shape: &ArcShape,
+        shape: &ArcCollidable,
         frame_start_time: f32,
         frame_end_time: f32,
     ) -> Vec3A {
-        shape
-            .get_bounding_box(frame_start_time, frame_end_time)
-            .minimum
+        shape.get_bounding_box(frame_start_time, frame_end_time).minimum
     }
 
     fn sort_aabb_by_x(
         frame_start_time: f32,
         frame_end_time: f32,
-    ) -> Box<dyn FnMut(&ArcShape, &ArcShape) -> Ordering> {
+    ) -> Box<dyn FnMut(&ArcCollidable, &ArcCollidable) -> Ordering> {
         Box::new(move |a, b| {
             let ax = bounding_box_minimum_for_shape(a, frame_start_time, frame_end_time).x;
             let bx = bounding_box_minimum_for_shape(b, frame_start_time, frame_end_time).x;
@@ -142,7 +137,7 @@ pub mod bvh {
     fn sort_aabb_by_y(
         frame_start_time: f32,
         frame_end_time: f32,
-    ) -> Box<dyn FnMut(&ArcShape, &ArcShape) -> Ordering> {
+    ) -> Box<dyn FnMut(&ArcCollidable, &ArcCollidable) -> Ordering> {
         Box::new(move |a, b| {
             let ay = bounding_box_minimum_for_shape(a, frame_start_time, frame_end_time).y;
             let by = bounding_box_minimum_for_shape(b, frame_start_time, frame_end_time).y;
@@ -161,7 +156,7 @@ pub mod bvh {
     fn sort_aabb_by_z(
         frame_start_time: f32,
         frame_end_time: f32,
-    ) -> Box<dyn FnMut(&ArcShape, &ArcShape) -> Ordering> {
+    ) -> Box<dyn FnMut(&ArcCollidable, &ArcCollidable) -> Ordering> {
         Box::new(move |a, b| {
             let az = bounding_box_minimum_for_shape(a, frame_start_time, frame_end_time).z;
             let bz = bounding_box_minimum_for_shape(b, frame_start_time, frame_end_time).z;
@@ -178,7 +173,7 @@ pub mod bvh {
     }
 
     fn sub_divide_children_into_node(
-        children: Vec<ArcShape>,
+        children: Vec<ArcCollidable>,
         frame_start_time: f32,
         frame_end_time: f32,
     ) -> BVHNode {
@@ -186,8 +181,8 @@ pub mod bvh {
             panic!("No children given",);
         }
 
-        let mut left: Option<&ArcShape> = children.get(0);
-        let mut right: Option<&ArcShape> = children.get(0);
+        let mut left: Option<&ArcCollidable> = children.get(0);
+        let mut right: Option<&ArcCollidable> = children.get(0);
 
         let mut comparator = match random_usize_between(0, 2) {
             0 => sort_aabb_by_x(frame_start_time, frame_end_time),
@@ -217,8 +212,8 @@ pub mod bvh {
 
                 return BVHNode::new(
                     Uuid::new_v4(),
-                    Arc::new(left_node),
-                    Arc::new(right_node),
+                    Arc::new(Collider::BVHNodeCollider(left_node)),
+                    Arc::new(Collider::BVHNodeCollider(right_node)),
                     aabb,
                 );
             }
@@ -257,7 +252,7 @@ pub mod bvh {
     }
 
     impl BVHNode {
-        pub fn new(uuid: Uuid, left: ArcShape, right: ArcShape, aabb: Aabb) -> BVHNode {
+        pub fn new(uuid: Uuid, left: ArcCollidable, right: ArcCollidable, aabb: Aabb) -> BVHNode {
             BVHNode {
                 uuid,
                 left,
@@ -267,16 +262,13 @@ pub mod bvh {
         }
 
         pub fn build_tree(
-            children: Vec<ArcShape>,
+            children: Vec<ArcCollidable>,
             frame_start_time: f32,
             frame_end_time: f32,
         ) -> BVHNode {
             sub_divide_children_into_node(children, frame_start_time, frame_end_time)
         }
-    }
-
-    impl Shape for BVHNode {
-        fn collide_ray(&self, ray: &Ray, t_min: f32, t_max: f32) -> Option<RayCollision> {
+        pub fn collide_ray(&self, ray: &Ray, t_min: f32, t_max: f32) -> Option<RayCollision> {
             let collides = self.aabb.does_ray_collide(ray, t_min, t_max);
 
             if collides {
@@ -305,7 +297,7 @@ pub mod bvh {
             None
         }
 
-        fn get_bounding_box(&self, _frame_start_time: f32, _frame_end_time: f32) -> Aabb {
+        pub fn get_bounding_box(&self, _frame_start_time: f32, _frame_end_time: f32) -> Aabb {
             self.aabb
         }
     }
