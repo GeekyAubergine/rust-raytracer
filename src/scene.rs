@@ -92,14 +92,17 @@ pub mod generator {
         let mat1 = Arc::new(Dielectric::new(1.5, 0.8));
         let mat2 = Arc::new(Lambertian::new(Color::new(0.4, 0.2, 0.1)));
         let mat3 = Arc::new(Metal::new(Color::new(0.7, 0.6, 0.5), 0.0));
+        let mat4 = Arc::new(Dielectric::new(1.5, 1.0));
 
         let sphere1 = Sphere::new(0.0, 1.0, 0.0, 1.0, mat1, Vec3A::ZERO);
         let sphere2 = Sphere::new(-4.0, 1.0, 0.0, 1.0, mat2, Vec3A::ZERO);
         let sphere3 = Sphere::new(4.0, 1.0, 0.0, 1.0, mat3, Vec3A::ZERO);
+        let sphere4 = Sphere::new(8.0, 1.5, 2.0, 0.3, mat4, Vec3A::ZERO);
 
         scene.add_shape(Arc::new(sphere1));
         scene.add_shape(Arc::new(sphere2));
         scene.add_shape(Arc::new(sphere3));
+        scene.add_shape(Arc::new(sphere4));
 
         scene
     }
