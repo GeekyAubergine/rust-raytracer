@@ -20,6 +20,7 @@ mod scene;
 mod stats;
 mod shape;
 mod ui;
+mod collider;
 
 const IMAGE_WIDTH: u32 = 1080;
 const IMAGE_HEIGHT: u32 = 920;
@@ -27,6 +28,7 @@ const WINDOW_WIDTH: u32 = 1080;
 const WINDOW_HEIGHT: u32 = 920;
 const THREAD_POOL_SIZE: u32 = 12;
 
+// const SAMPLES_PER_PIXEL_SIDE_VALUES: [u32; 2] = [1, 2];
 const SAMPLES_PER_PIXEL_SIDE_VALUES: [u32; 4] = [1, 2, 4, 8];
 
 fn ray_trace(width: u32, height: u32, pixel_batch_sender: Sender<PixelBatchUpdate>) {

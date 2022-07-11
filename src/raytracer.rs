@@ -10,7 +10,7 @@ use crate::{
     color::Color,
     scene::Scene,
     stats::Stats,
-    ui::pixel::{Pixel, PixelBatchUpdate, PixelsData},
+    ui::pixel::{Pixel, PixelBatchUpdate, PixelsData}, shape::Sphere,
 };
 
 use super::camera::Camera;
@@ -109,7 +109,7 @@ pub fn render_scene(
 
     let samples_per_pixel = samples_per_pixel_side * samples_per_pixel_side;
 
-    let bvh_tree = BVHNode::build_tree(scene.shapes.clone(), 0.0, 1.0);
+    let bvh_tree = BVHNode::build_tree(scene.colliders.clone(), 0.0, 1.0);
 
     stats
         .clone()

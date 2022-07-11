@@ -2,38 +2,38 @@ use std::sync::Arc;
 
 use glam::Vec3A;
 
-use crate::{ray::{Ray, RayCollision, RayCollider, collide_ray_with_sphere}, material::Material};
+use crate::{ray::{Ray, RayCollision, RayCollider, collide_ray_with_sphere}, material::materials::Material};
 
 use super::bounding_box::{build_surrounding_bounding_box, BoundingBox, Aabb};
 
-pub trait Shape {
-    fn collide_ray(&self, ray: &Ray, t_min: f32, t_max: f32) -> Option<RayCollision>;
-    fn get_bounding_box(&self, frame_start_time: f32, frame_end_time: f32) -> Aabb;
-}
+// pub trait Collidable {
+//     fn collide_ray(&self, ray: &Ray, t_min: f32, t_max: f32) -> Option<RayCollision>;
+//     fn get_bounding_box(&self, frame_start_time: f32, frame_end_time: f32) -> Aabb;
+// }
 
-impl<T> RayCollider for T
-where
-    T: Shape + Send + Sync,
-{
-    fn collide_ray(&self, ray: &Ray, t_min: f32, t_max: f32) -> Option<RayCollision> {
-        self.collide_ray(ray, t_min, t_max)
-    }
-}
+// impl<T> RayCollider for T
+// where
+//     T: Collidable + Send + Sync,
+// {
+//     fn collide_ray(&self, ray: &Ray, t_min: f32, t_max: f32) -> Option<RayCollision> {
+//         self.collide_ray(ray, t_min, t_max)
+//     }
+// }
 
-impl<T> BoundingBox for T
-where
-    T: Shape + Send + Sync,
-{
-    fn get_bounding_box(&self, frame_start_time: f32, frame_end_time: f32) -> Aabb {
-        self.get_bounding_box(frame_start_time, frame_end_time)
-    }
-}
+// impl<T> BoundingBox for T
+// where
+//     T: Collidable + Send + Sync,
+// {
+//     fn get_bounding_box(&self, frame_start_time: f32, frame_end_time: f32) -> Aabb {
+//         self.get_bounding_box(frame_start_time, frame_end_time)
+//     }
+// }
 
 pub struct Sphere {
     pub centre: Vec3A,
     pub radius: f32,
     pub velocity: Vec3A,
-    pub material: Arc<dyn Material>,
+    pub material: Arc<Material>,
 }
 
 impl Sphere {
@@ -42,7 +42,7 @@ impl Sphere {
         y: f32,
         z: f32,
         r: f32,
-        material: Arc<dyn Material + Send + Sync>,
+        material: Arc<Material>,
         velocity: Vec3A,
     ) -> Sphere {
         Sphere {
@@ -55,10 +55,7 @@ impl Sphere {
     pub fn center_at_frame_time(&self, time_delta: f32) -> Vec3A {
         self.centre + self.velocity * time_delta
     }
-}
-
-impl Shape for Sphere {
-    fn collide_ray(&self, ray: &Ray, t_min: f32, t_max: f32) -> Option<RayCollision> {
+    pub fn collide_ray(&self, ray: &Ray, t_min: f32, t_max: f32) -> Option<RayCollision> {
         let centre = self.center_at_frame_time(ray.time);
         let root = collide_ray_with_sphere(ray, centre, self.radius, t_min, t_max);
 
@@ -77,7 +74,7 @@ impl Shape for Sphere {
         }
     }
 
-    fn get_bounding_box(&self, frame_start_time: f32, frame_end_time: f32) -> Aabb {
+    pub fn get_bounding_box(&self, frame_start_time: f32, frame_end_time: f32) -> Aabb {
         let radius_vec = Vec3A::new(self.radius, self.radius, self.radius);
         let centre_start = self.center_at_frame_time(frame_start_time);
         let centre_end = self.center_at_frame_time(frame_end_time);

@@ -1,14 +1,11 @@
 use crate::{
-    ray::{Ray, RayCollision},
+    ray::{Ray},
     color::Color,
 };
 
 pub struct MaterialCollisionResult {
     pub color: Color,
     pub ray: Ray,
-}
-pub trait Material: Send + Sync {
-    fn scatter(&self, ray: &Ray, collision: &RayCollision) -> Option<MaterialCollisionResult>;
 }
 
 mod utils {
@@ -80,8 +77,7 @@ pub mod materials {
     };
 
     use super::{
-        utils::{reflect_ray, refract_ray},
-        Material, MaterialCollisionResult,
+        utils::{reflect_ray, refract_ray}, MaterialCollisionResult,
     };
 
     pub struct Dielectric {
@@ -96,10 +92,7 @@ pub mod materials {
                 transparency,
             }
         }
-    }
-
-    impl Material for Dielectric {
-        fn scatter(&self, ray: &Ray, hit_record: &RayCollision) -> Option<MaterialCollisionResult> {
+        pub fn scatter(&self, ray: &Ray, hit_record: &RayCollision) -> Option<MaterialCollisionResult> {
             Some(MaterialCollisionResult {
                 color: Color::new(self.transparency, self.transparency, self.transparency),
                 ray: refract_ray(
@@ -121,10 +114,7 @@ pub mod materials {
         pub fn new(albedo: Color) -> Lambertian {
             Lambertian { albedo }
         }
-    }
-
-    impl Material for Lambertian {
-        fn scatter(
+        pub fn scatter(
             &self,
             _ray: &Ray,
             ray_collision: &RayCollision,
@@ -154,10 +144,7 @@ pub mod materials {
         pub fn new(albedo: Color, smoothness: f32) -> Metal {
             Metal { albedo, smoothness }
         }
-    }
-
-    impl Material for Metal {
-        fn scatter(&self, ray: &Ray, hit_record: &RayCollision) -> Option<MaterialCollisionResult> {
+        pub fn scatter(&self, ray: &Ray, hit_record: &RayCollision) -> Option<MaterialCollisionResult> {
             let scattered = reflect_ray(
                 ray,
                 hit_record.point(),
@@ -171,6 +158,22 @@ pub mod materials {
                 });
             }
             None
+        }
+    }
+
+    pub enum Material {
+        MaterialDielectric(Dielectric),
+        MaterialLambertian(Lambertian),
+        MaterialMetal(Metal),
+    }
+
+    impl Material {
+        pub fn scatter(&self, ray: &Ray, collision: &RayCollision) -> Option<MaterialCollisionResult> {
+            match self {
+                Material::MaterialDielectric(dielectric) => dielectric.scatter(ray, collision),
+                Material::MaterialLambertian(lambertian) => lambertian.scatter(ray, collision),
+                Material::MaterialMetal(metal) => metal.scatter(ray, collision),
+            }
         }
     }
 }

@@ -3,7 +3,7 @@ use std::sync::Arc;
 use glam::Vec3A;
 use uuid::Uuid;
 
-use crate::material::Material;
+use crate::material::materials::Material;
 
 pub struct Ray {
     pub origin: Vec3A,
@@ -30,7 +30,7 @@ pub struct RayCollision {
     normal: Vec3A,
     time: f32,
     on_front_face: bool,
-    material: Arc<dyn Material>,
+    material: Arc<Material>,
     bvh_node_uuids: Vec<Uuid>,
 }
 
@@ -40,7 +40,7 @@ impl RayCollision {
         normal: Vec3A,
         time: f32,
         ray: &Ray,
-        material: Arc<dyn Material>,
+        material: Arc<Material>,
     ) -> RayCollision {
         let front_face = ray.direction.dot(normal) < 0.0;
         let mut normal = normal;
@@ -71,7 +71,7 @@ impl RayCollision {
     pub fn on_front_face(&self) -> bool {
         self.on_front_face
     }
-    pub fn material(&self) -> &dyn Material {
+    pub fn material(&self) -> &Material {
         self.material.as_ref()
     }
     pub fn bvh_node_uuids(&self) -> &Vec<Uuid> {
